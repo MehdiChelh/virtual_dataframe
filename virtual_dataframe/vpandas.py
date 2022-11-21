@@ -266,7 +266,7 @@ def _patch_read(front, func, scope=None):
     return _wrapper
 
 
-def _patch_pandas(pd_DataFrame, pd_Series):
+def _patch_pandas(pd_DataFrame, pd_Series, pd_NDArray):
     # Add-on and patch of original dataframes and series
     _extra_params = ["single_file",
                      "name_function",
@@ -287,6 +287,7 @@ def _patch_pandas(pd_DataFrame, pd_Series):
     pd_DataFrame.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
     pd_DataFrame.to_backend = lambda self: self
     pd_DataFrame.to_backend.__doc__ = _doc_VDataFrame_to_pandas
+    pd_DataFrame.to_narray = pd_DataFrame.to_numpy
 
     pd_DataFrame.apply_rows = _apply_rows
     pd_DataFrame.apply_rows.__doc__ = _doc_apply_rows
@@ -302,6 +303,8 @@ def _patch_pandas(pd_DataFrame, pd_Series):
     pd_DataFrame.visualize.__doc__ = _doc_VDataFrame_visualize
     pd_DataFrame.categorize = lambda self: self
     pd_DataFrame.categorize.__doc__ = _doc_categorize
+    pd_DataFrame.to_narray = pd_DataFrame.to_numpy
+
 
     pd_Series.map_partitions = lambda self, func, *args, **kwargs: self.map(func, *args, *kwargs)
     pd_Series.map_partitions.__doc__ = _doc_VDataFrame_map_partitions
@@ -321,9 +324,10 @@ def _patch_pandas(pd_DataFrame, pd_Series):
     pd_Series.to_excel = _patch_to(pd_Series.to_excel, [], "cudf, dask and dask_cudf")
     pd_Series.to_hdf = _patch_to(pd_Series.to_hdf, [], "dask_cudf")
     pd_Series.to_json = _patch_to(pd_Series.to_json, [], "dask_cudf")
+    pd_Series.to_narray = pd_Series.to_numpy
 
 
-def _patch_cudf(cu_DataFrame, cu_Series):
+def _patch_cudf(cu_DataFrame, cu_Series,cu_NDArray):
     _extra_params = ["single_file",
                      "name_function",
                      "compute",
@@ -359,6 +363,10 @@ def _patch_cudf(cu_DataFrame, cu_Series):
     cu_DataFrame.visualize.__doc__ = _doc_VDataFrame_visualize
     cu_DataFrame.categorize = lambda self: self
     cu_DataFrame.categorize.__doc__ = _doc_categorize
+    def _df_to_narray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
+        return cupy.from_dlpack(self.to_dlpack())
+    cu_DataFrame.to_narray = _df_to_narray
+
 
     cu_Series.map_partitions = lambda self, func, *args, **kwargs: self.map(func, *args, *kwargs)
     cu_Series.map_partitions.__doc__ = cu_Series.map.__doc__
@@ -376,6 +384,10 @@ def _patch_cudf(cu_DataFrame, cu_Series):
     cu_Series.to_excel = _not_implemented
     cu_Series.to_hdf = _patch_to(cu_Series.to_hdf, [], "dask_cudf")
     cu_Series.to_json = _patch_to(cu_Series.to_json, [], "dask_cudf")
+    def _series_to_narray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
+        import cupy
+        return cupy.from_dlpack(self.to_dlpack())
+    cu_Series.to_narray = _series_to_narray
 
 
 if VDF_MODE in (Mode.pandas, Mode.cudf, Mode.modin, Mode.dask_modin, Mode.pyspark):
@@ -415,14 +427,13 @@ if VDF_MODE == Mode.pandas:
     import pandas
     import numpy
 
-    # BackEndDataFrame = pandas.DataFrame
-    # BackEndSeries = pandas.Series
-    # _BackIndex = pandas.Index
     BackEndDataFrame: Any = pandas.DataFrame
     BackEndSeries: Any = pandas.Series
+    BackEndNDArray: Any = numpy.ndarray
     BackEnd = pandas
 
     FrontEnd = pandas
+    FrontEndNumpy = numpy
 
     _VDataFrame: Any = FrontEnd.DataFrame
     _VSeries: Any = FrontEnd.Series
@@ -524,18 +535,24 @@ if VDF_MODE == Mode.pandas:
     read_parquet = FrontEnd.read_parquet
     read_sql_table = _warn(FrontEnd.read_sql_table, "cudf and dask_cudf")
 
-    _patch_pandas(_VDataFrame, _VSeries)
+    _patch_pandas(_VDataFrame, _VSeries, BackEndNDArray)
+
+    numpy = FrontEndNumpy
+    numpy.asnumpy = lambda d:d
 
 # %% cudf
 if VDF_MODE == Mode.cudf:
     import cudf
+    import cupy
     import pandas
 
     BackEndDataFrame: Any = cudf.DataFrame
     BackEndSeries: Any = cudf.Series
+    BackEndNDArray: Any = cupy.ndarray
     BackEnd = cudf
 
     FrontEnd = cudf
+    FrontEndNumpy = cupy
 
     _VDataFrame: Any = BackEndDataFrame
     _VSeries: Any = BackEndSeries
@@ -611,7 +628,11 @@ if VDF_MODE == Mode.cudf:
     read_parquet = FrontEnd.read_parquet
     read_sql_table = _not_implemented
 
-    _patch_cudf(_VDataFrame, _VSeries)
+    _patch_cudf(_VDataFrame, _VSeries, BackEndNDArray)
+
+    numpy = FrontEndNumpy
+
+
 
 # %% modin dask_modin
 if VDF_MODE in (Mode.modin, Mode.dask_modin):

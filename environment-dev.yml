@@ -2,6 +2,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - ipython
   - pytables
   #  - graphviz
   - conda-build
