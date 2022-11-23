@@ -2,29 +2,40 @@
 This project is just a wrapper. So, it inherits limitations and bugs from other projects. Sorry for that.
 
 
-| Limitations                                                                                         |
-|-----------------------------------------------------------------------------------------------------|
-| <br />**pandas**                                                                                    |
-| All data must be in DRAM                                                                            |
-| <br />**modin**                                                                                     |
-| [Read this](https://modin.readthedocs.io/en/stable/getting_started/why_modin/pandas.html)           |
-| <br />**[cudf](https://docs.rapids.ai/api/cudf/nightly/user_guide/pandas-comparison.html)**         |
-| All data must be in VRAM                                                                            |
-| All data types in cuDF are nullable                                                                 |
-| Iterating over a cuDF Series, DataFrame or Index is not supported.                                  |
-| Join (or merge) and groupby operations in cuDF do not guarantee output ordering.                    |
-| The order of operations is not always deterministic                                                 |
-| Cudf does not support duplicate column names                                                        |
-| Cudf also supports .apply() it relies on Numba to JIT compile the UDF and execute it on the GPU     |
-| .apply(result_type=...) not supported                                                               |
-| <br />**[dask](https://distributed.dask.org/en/stable/limitations.html)**                           |
-|  transpose() and MultiIndex are not implemented                                                     |
-| Column assignment doesn't support type list                                                         |
-| <br />**dask_cudf**                                                                                 |
-| See cudf and dask.                                                                                  |
-| Categories with strings not implemented                                                             |
-| <br />**pyspark**                                                                                   |
-| [Read this](https://spark.apache.org/docs/latest/api/python/reference/pyspark.pandas/index.html)    |
+| Limitations of Pandas like framework                                                             |
+|--------------------------------------------------------------------------------------------------|
+| <br />**pandas**                                                                                 |
+| All data must be in DRAM                                                                         |
+| <br />**modin**                                                                                  |
+| [Read this](https://modin.readthedocs.io/en/stable/getting_started/why_modin/pandas.html)        |
+| <br />**[cudf](https://docs.rapids.ai/api/cudf/nightly/user_guide/pandas-comparison.html)**      |
+| All data must be in VRAM                                                                         |
+| All data types in cuDF are nullable                                                              |
+| Iterating over a cuDF Series, DataFrame or Index is not supported.                               |
+| Join (or merge) and groupby operations in cuDF do not guarantee output ordering.                 |
+| The order of operations is not always deterministic                                              |
+| Cudf does not support duplicate column names                                                     |
+| Cudf also supports .apply() it relies on Numba to JIT compile the UDF and execute it on the GPU  |
+| .apply(result_type=...) not supported                                                            |
+| <br />**[dask](https://distributed.dask.org/en/stable/limitations.html)**                        |
+|  transpose() and MultiIndex are not implemented                                                  |
+| Column assignment doesn't support type list                                                      |
+| <br />**dask_cudf**                                                                              |
+| See cudf and dask.                                                                               |
+| Categories with strings not implemented                                                          |
+| <br />**pyspark**                                                                                |
+| [Read this](https://spark.apache.org/docs/latest/api/python/reference/pyspark.pandas/index.html) |
+
+| Limitations of Numpy like framework                                       |
+|---------------------------------------------------------------------------|
+| <br/>**numpy**</br/>                                                      |
+| All data must be in RAM                                                   |
+| <br/>**cupy**</br/>                                                       |
+| [Read this](https://docs.cupy.dev/en/stable/user_guide/difference.html)   |
+| <br/>**dask array**</br/>                                                 |
+| [Read this](https://docs.dask.org/en/stable/array.html#scope)             |
+For compatibility between numpy and cupy,
+see [here](https://numpy.org/doc/stable/user/basics.interoperability.html#basics-interoperability).
 
 ### File format compatibility
 To be compatible with all framework, you must only use the common features.

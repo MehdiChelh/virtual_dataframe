@@ -127,7 +127,7 @@ def test_DataFrame_to_read_csv():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.dask, Mode.dask_cudf), reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask, Mode.dask_cudf), reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
 @pytest.mark.filterwarnings("ignore:.*This may take some time.")
@@ -212,7 +212,7 @@ def test_DataFrame_to_read_json():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.pandas,
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.pandas, Mode.numpy,
                                      Mode.dask_cudf,
                                      Mode.modin,
                                      Mode.dask_modin), reason="Incompatible mode")
@@ -246,7 +246,7 @@ def test_DataFrame_to_read_parquet():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.dask_cudf, Mode.pyspark),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.pyspark),
                     reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")

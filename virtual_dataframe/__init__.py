@@ -7,15 +7,15 @@ from typing import List
 
 from dotenv import load_dotenv
 
-from .env import DEBUG, VDF_MODE, Mode
-from .vclient import VClient
-from .vlocalcluster import VLocalCluster
-from .vpandas import BackEndDataFrame, BackEndSeries, BackEndNDArray, BackEnd, FrontEnd, FrontEndNumpy
-from .vpandas import VDataFrame, VSeries, numpy
-from .vpandas import compute, concat, delayed, persist, visualize, numpy
-from .vpandas import from_pandas, from_backend
-from .vpandas import read_csv, read_excel, read_feather, read_fwf, read_hdf
-from .vpandas import read_json, read_orc, read_parquet, read_sql_table
+from virtual_dataframe.env import DEBUG, VDF_MODE, Mode
+from virtual_dataframe.vclient import VClient
+from virtual_dataframe.vlocalcluster import VLocalCluster
+from virtual_dataframe.vpandas import BackEndDataFrame, BackEndSeries, BackEndNDArray, BackEnd, FrontEnd, FrontEndNumpy
+from virtual_dataframe.vpandas import VDataFrame, VSeries
+from virtual_dataframe.vpandas import compute, concat, delayed, persist, visualize
+from virtual_dataframe.vpandas import from_pandas, from_backend
+from virtual_dataframe.vpandas import read_csv, read_excel, read_feather, read_fwf, read_hdf
+from virtual_dataframe.vpandas import read_json, read_orc, read_parquet, read_sql_table
 
 load_dotenv()
 
@@ -24,8 +24,8 @@ __all__: List[str] = [
     'VDataFrame', 'VSeries', 'VClient', 'VLocalCluster', 'numpy',
     'FrontEnd', 'FrontEndNumpy',
     'BackEndDataFrame', 'BackEndSeries', 'BackEndNDArray', 'BackEnd',
-    'compute', 'concat', 'delayed', 'persist', 'visualize','asnumpy',
+    'compute', 'concat', 'delayed', 'persist', 'visualize',
     'from_pandas', 'from_backend',
     'read_csv', 'read_excel', 'read_feather', 'read_fwf', 'read_hdf',
-    'read_json', 'read_orc', 'read_parquet', 'read_sql_table'
+    'read_json', 'read_orc', 'read_parquet', 'read_sql_table',
 ]

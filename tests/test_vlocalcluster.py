@@ -10,8 +10,19 @@ def test_panda():
     assert repr(local_cluster) == "LocalClusterDummy('localhost:8786')"
 
 
+def test_numpy():
+    local_cluster = vlocalcluster._new_VLocalCluster(mode=Mode.numpy)
+    assert type(local_cluster).__name__ == "_LocalClusterDummy"
+    assert repr(local_cluster) == "LocalClusterDummy('localhost:8786')"
+
+
 def test_cudf():
     local_cluster = vlocalcluster._new_VLocalCluster(mode=Mode.cudf)
+    assert type(local_cluster).__name__ == "_LocalClusterDummy"
+    assert repr(local_cluster) == "LocalClusterDummy('localhost:8786')"
+
+def test_cupy():
+    local_cluster = vlocalcluster._new_VLocalCluster(mode=Mode.cupy)
     assert type(local_cluster).__name__ == "_LocalClusterDummy"
     assert repr(local_cluster) == "LocalClusterDummy('localhost:8786')"
 

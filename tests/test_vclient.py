@@ -32,6 +32,18 @@ def test_cudf():
         assert repr(client) == '<Client: in-process scheduler>'
 
 
+def test_cupy():
+    env = {
+    }
+    with vclient._new_VClient(
+            mode=Mode.cupy,
+            env=env,
+            address=None,
+    ) as client:
+        assert type(client).__name__ == "_ClientDummy"
+        assert repr(client) == '<Client: in-process scheduler>'
+
+
 @pytest.mark.skipif(not VDF_MODE.name.startswith("dask"), reason="Invalid mode")
 @patch('virtual_dataframe.vclient._ClientDummy')
 def test_dask_debug(mockClient):

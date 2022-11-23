@@ -249,7 +249,7 @@ def _new_VClient(mode: Mode,
                  env: EnvDict,
                  address: Union[str, Any],
                  **kwargs) -> Any:
-    if mode in (Mode.pandas, Mode.cudf, Mode.modin):
+    if mode in (Mode.pandas, Mode.numpy, Mode.cudf, Mode.cupy, Mode.modin):
         return _ClientDummy("")
 
     if address:

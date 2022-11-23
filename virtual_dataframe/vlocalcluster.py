@@ -75,7 +75,7 @@ class SparkLocalCluster:
 def _new_VLocalCluster(
         mode: Mode,
         **kwargs) -> Any:
-    if mode in (Mode.pandas, Mode.cudf, Mode.modin):
+    if mode in (Mode.pandas, Mode.numpy, Mode.cudf, Mode.cupy, Mode.modin):
         return _LocalClusterDummy()
     elif mode == Mode.pyspark:
         return SparkLocalCluster(**kwargs)

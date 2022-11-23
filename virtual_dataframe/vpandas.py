@@ -13,6 +13,7 @@ from typing import Any, List, Tuple, Optional, Union, Callable, Dict, Type, Iter
 
 from .env import VDF_MODE, Mode
 
+# TODO: Use https://docs.python.org/fr/3/library/functools.html#functools.wraps ?
 # %% docs
 _doc_delayed = ''' Fake @dask.delayed. Do nothing.'''
 _doc_from_pandas = '''
@@ -305,7 +306,6 @@ def _patch_pandas(pd_DataFrame, pd_Series, pd_NDArray):
     pd_DataFrame.categorize.__doc__ = _doc_categorize
     pd_DataFrame.to_narray = pd_DataFrame.to_numpy
 
-
     pd_Series.map_partitions = lambda self, func, *args, **kwargs: self.map(func, *args, *kwargs)
     pd_Series.map_partitions.__doc__ = _doc_VDataFrame_map_partitions
     pd_Series.compute = lambda self, **kwargs: self
@@ -327,7 +327,7 @@ def _patch_pandas(pd_DataFrame, pd_Series, pd_NDArray):
     pd_Series.to_narray = pd_Series.to_numpy
 
 
-def _patch_cudf(cu_DataFrame, cu_Series,cu_NDArray):
+def _patch_cudf(cu_DataFrame, cu_Series, cu_NDArray):
     _extra_params = ["single_file",
                      "name_function",
                      "compute",
@@ -363,10 +363,11 @@ def _patch_cudf(cu_DataFrame, cu_Series,cu_NDArray):
     cu_DataFrame.visualize.__doc__ = _doc_VDataFrame_visualize
     cu_DataFrame.categorize = lambda self: self
     cu_DataFrame.categorize.__doc__ = _doc_categorize
+
     def _df_to_narray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
         return cupy.from_dlpack(self.to_dlpack())
-    cu_DataFrame.to_narray = _df_to_narray
 
+    cu_DataFrame.to_narray = _df_to_narray
 
     cu_Series.map_partitions = lambda self, func, *args, **kwargs: self.map(func, *args, *kwargs)
     cu_Series.map_partitions.__doc__ = cu_Series.map.__doc__
@@ -384,13 +385,15 @@ def _patch_cudf(cu_DataFrame, cu_Series,cu_NDArray):
     cu_Series.to_excel = _not_implemented
     cu_Series.to_hdf = _patch_to(cu_Series.to_hdf, [], "dask_cudf")
     cu_Series.to_json = _patch_to(cu_Series.to_json, [], "dask_cudf")
+
     def _series_to_narray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
         import cupy
         return cupy.from_dlpack(self.to_dlpack())
+
     cu_Series.to_narray = _series_to_narray
 
 
-if VDF_MODE in (Mode.pandas, Mode.cudf, Mode.modin, Mode.dask_modin, Mode.pyspark):
+if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.cudf, Mode.cupy, Mode.modin, Mode.dask_modin, Mode.pyspark):
 
     def _remove_dask_parameters(func, *part_args, **kwargs):
         return _remove_parameters(func, ["npartitions", "chunksize", "sort", "name"])
@@ -423,7 +426,7 @@ if VDF_MODE in (Mode.pandas, Mode.cudf, Mode.modin, Mode.dask_modin, Mode.pyspar
         return collections
 
 # %% pandas
-if VDF_MODE == Mode.pandas:
+if VDF_MODE in (Mode.pandas, Mode.numpy):
     import pandas
     import numpy
 
@@ -538,10 +541,10 @@ if VDF_MODE == Mode.pandas:
     _patch_pandas(_VDataFrame, _VSeries, BackEndNDArray)
 
     numpy = FrontEndNumpy
-    numpy.asnumpy = lambda d:d
+    numpy.asnumpy = lambda d: d
 
 # %% cudf
-if VDF_MODE == Mode.cudf:
+if VDF_MODE in (Mode.cudf, Mode.cupy):
     import cudf
     import cupy
     import pandas
@@ -629,10 +632,6 @@ if VDF_MODE == Mode.cudf:
     read_sql_table = _not_implemented
 
     _patch_cudf(_VDataFrame, _VSeries, BackEndNDArray)
-
-    numpy = FrontEndNumpy
-
-
 
 # %% modin dask_modin
 if VDF_MODE in (Mode.modin, Mode.dask_modin):
@@ -893,9 +892,11 @@ if VDF_MODE == Mode.dask:
 
     BackEndDataFrame: Any = pandas.DataFrame
     BackEndSeries: Any = pandas.Series
+    BackEndNDArray: Any = numpy.ndarray
     BackEnd = pandas
 
     FrontEnd = dask.dataframe
+    FrontEndNumpy = dask.array
 
     _VDataFrame: Any = FrontEnd.DataFrame
     _VSeries: Any = FrontEnd.Series
@@ -1019,7 +1020,9 @@ if VDF_MODE == Mode.dask:
     _VSeries.to_numpy = lambda self: self.compute().to_numpy()
     _VSeries.to_numpy.__doc__ = _doc_VSeries_to_numpy
 
-    _patch_pandas(BackEndDataFrame, BackEndSeries)
+    _patch_pandas(BackEndDataFrame, BackEndSeries, numpy.ndarray)
+
+    numpy = FrontEndNumpy
 
 # %% pyspark
 if VDF_MODE == Mode.pyspark:
@@ -1238,7 +1241,7 @@ if VDF_MODE == Mode.pyspark:
             warnings.warn(f"Function 'to_excel' not implemented in mode cudf, dask and dask_cudf",
                           RuntimeWarning, stacklevel=0)
         _ = locals().copy()
-        if isinstance(_["excel_writer"],str) and "*" in str(_["excel_writer"]):
+        if isinstance(_["excel_writer"], str) and "*" in str(_["excel_writer"]):
             _["excel_writer"] = _["excel_writer"].replace("*", "")
         del _["self"]
         return _original_Dataframe_to_excel(self, **_)
@@ -1272,7 +1275,7 @@ if VDF_MODE == Mode.pyspark:
             warnings.warn(f"Function 'to_excel' not implemented in mode cudf, dask and dask_cudf",
                           RuntimeWarning, stacklevel=0)
         _ = locals().copy()
-        if isinstance(_["excel_writer"],str) and "*" in str(_["excel_writer"]):
+        if isinstance(_["excel_writer"], str) and "*" in str(_["excel_writer"]):
             _["excel_writer"] = _["excel_writer"].replace("*", "")
         del _["self"]
         return _original_Dataframe_to_excel(self, **_)

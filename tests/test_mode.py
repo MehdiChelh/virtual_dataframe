@@ -48,7 +48,7 @@ def _test_scenario_dataframe():
     return input_df, rc1
 
 
-@pytest.mark.skipif(vdf.VDF_MODE != vdf.Mode.pandas, reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE not in (vdf.Mode.pandas, vdf.Mode.numpy), reason="Incompatible mode")
 def test_DataFrame_MODE_pandas():
     import pandas
     with (VClient()) as client:

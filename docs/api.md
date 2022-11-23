@@ -39,14 +39,19 @@
 | VDataFrame.categorize()                | Detect all categories                             |
 | VDataFrame.apply_rows()                | Apply rows, GPU template                          |
 | VDataFrame.map_partitions()            | Apply function for each parttions                 |
+| VDataFrame.to_ndarray()                | Convert to numpy or cupy ndarray                  |
+| VDataFrame.to_numpy()                  | Convert to numpy ndarray                          |
 | VSeries.compute()                      | Compute the virtual series                        |
 | VSeries.persist()                      | Persist the dataframe in memory                   |
 | VSeries.repartition()                  | Rebalance the dataframe                           |
 | VSeries.visualize()                    | Create an image with the graph                    |
 | VSeries.to_pandas()                    | Convert to pandas series                          |
 | VSeries.to_backend()                   | Convert to backend series                         |
-| VSeries.to_numpy()                     | Convert to numpy array                            |
+| VSeries.to_numpy()                     | Convert to numpy ndarray                          |
+| VSeries.to_ndarray()                   | Convert to numpy or cupy ndarray                  |
 | VClient(...)                           | The connexion with the cluster                    |
+| import vdf.numpy                       | Import numpy or cupy                              |
+| vdf.numpy.asnumpy(d)                   | Convert to numpy.ndarray                          |
 | VDF_MODE                               | The current mode                                  |
 | Mode                                   | The enumeration of differents mode                |
 

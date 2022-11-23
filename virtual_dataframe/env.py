@@ -25,7 +25,9 @@ from enum import Enum
 
 class Mode(Enum):
     pandas = "pandas"
+    numpy = "numpy"
     cudf = "cudf"
+    cupy = "cupy"
     dask = "dask"
     modin = "modin"
     pyspark = "pyspark"

@@ -28,7 +28,7 @@ def test_Series_to_from_pandas():
     assert s.to_pandas().equals(pandas.Series([1, 2, 3, None, 4]))
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.dask_cudf), reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf), reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
 def test_Series_to_csv():
@@ -41,7 +41,7 @@ def test_Series_to_csv():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.cudf, Mode.dask_cudf),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask, Mode.dask_cudf),
                     reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
@@ -86,7 +86,7 @@ def test_Series_to_json():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.dask_cudf, Mode.pyspark), reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.pyspark), reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
 def test_Series_to_sql():
