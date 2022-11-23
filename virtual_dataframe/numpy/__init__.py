@@ -1,5 +1,6 @@
 from virtual_dataframe import VDF_MODE, Mode
 import sys
+from functools import wraps
 
 if VDF_MODE in (Mode.pandas, Mode.numpy):
 
@@ -20,6 +21,12 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
     class Vnarray(numpy.ndarray):
 
         def compute(self):
+            return self
+
+        def compute_chunk_sizes(self):
+            return self
+
+        def rechunk(self, *args, **kwargs):
             return self
 
         def __new__(subtype, shape,  # copy=True, order='K', subok=False, ndmin=0, like=None
@@ -102,8 +109,27 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
         return numpy.array(*args, **kwds).view(Vnarray)
 
 
-    update_wrapper(array, numpy.array)
+    def arange(start=None, *args, **kwargs):
+        kwargs.pop("chunks")
+        return numpy.arange(start, *args, **kwargs).view(Vnarray)
 
+
+    update_wrapper(array, numpy.array)
+    update_wrapper(arange, numpy.arange)
+
+    class _Random:
+        def __getattr__(self, attr):
+            func = getattr(numpy.random, attr)
+
+            @wraps(func)
+            def _wrapped(*args, **kwargs):
+                kwargs.pop("chunks")
+                return func(*args, **kwargs)
+
+            return _wrapped
+
+
+    random = _Random()
 
 elif VDF_MODE in (Mode.cudf, Mode.cupy):
 
@@ -112,6 +138,34 @@ elif VDF_MODE in (Mode.cudf, Mode.cupy):
     sys.modules[__name__] = cupy  # Hack to replace this current module to another
 
     cupy.ndarray.compute = lambda self: self
+    cupy.ndarray.compute_chunk_sizes = lambda self: self
+    cupy.ndarray.rechunk = lambda self,*args,**kwargs: self
+
+    class _Random:
+        def __init__(self,target):
+            self.target=target
+        def __getattr__(self, attr):
+            func = getattr(self.target, attr)
+
+            @wraps(func)
+            def _wrapped(*args, **kwargs):
+                kwargs.pop("chunks")
+                return func(*args, **kwargs)
+
+            return _wrapped
+
+
+    cupy.random = _Random(cupy.random)
+
+
+    def _wrapper(func):
+        @wraps(func)
+        def _wrapped(*args, **kwargs):
+            kwargs.pop("chunks")
+            return func(*args, **kwargs)
+        return _wrapped
+
+    cupy.arange = _wrapper(cupy.arange)
 
 elif VDF_MODE in (Mode.dask,):
 

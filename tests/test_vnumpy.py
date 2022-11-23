@@ -89,12 +89,6 @@ def test_ctr_serie():
     vdf.VSeries(a)
 
 
-def test_random():
-    # FIXME x = vnp.random.random((10000, 10000), chunks=(1000, 1000))
-    x = vnp.random.random((10000, 10000))
-    # FIXME
-
-
 def test_ctr():
     assert numpy.array_equal(
         vnp.asnumpy(vnp.array([1, 2])),
@@ -107,3 +101,38 @@ def test_slicing():
 
 def test_asnumpy():
     assert isinstance(vnp.asnumpy(vnp.array([1, 2])), numpy.ndarray)
+
+# %% chunks
+def test_compute_chunk_sizes():
+    vnp.arange(100_000, chunks=(100,)).compute_chunk_sizes().compute()
+
+def test_rechunk():
+    vnp.arange(100_000, chunks=(100, )).rechunk((200,200)).compute()
+
+# %% Random
+def test_random_random():
+    x = vnp.random.random((10000, 10000), chunks=(1000, 1000))
+    # FIXME
+
+def test_random_binomial():
+    vnp.random.binomial(10,.5,1000,chunks=10)
+
+def test_random_normal():
+    vnp.random.normal(0,.1,1000,chunks=10)
+
+def test_random_poisson():
+    vnp.random.poisson(5, 10000,chunks=100)
+
+# %% from_...
+def test_from_array():
+    data = np.arange(100_000).reshape(200, 500)
+    a = vnp.from_array(data, chunks=(100, 100))
+
+def test_from_delayed():
+    pass
+
+def test_from_npy_stack():
+    pass
+
+def test_from_zarr():
+    pass
