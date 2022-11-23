@@ -68,6 +68,14 @@ if you use a function not compatible with others frameworks.
 | VSeries.to_sql            |   ✓    |      |   ✓   |  ✓   |     ✓      |           |    ✓    |
 
 
+| load... / save...   | numpy | cupy | dask.array |
+|---------------------|:-----:|:----:|:----------:|
+| **vpd.load() npy**  |   ✓   |  ✓   |     ✓      |
+| **vpd.save() npy**  |   ✓   |  ✓   |     ✓      |
+| **vpd.savez() npz** |   ✓   |  ✓   |            |
+| **vpd.loadtxt()**   |   ✓   |  ✓   |            |
+| **vpd.savetxt()**   |   ✓   |  ✓   |            |
+
 
 ### Cross framework compatibility
 

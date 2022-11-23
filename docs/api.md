@@ -2,6 +2,8 @@
 
 | api                                    | comments                                          |
 |----------------------------------------|---------------------------------------------------|
+| VDF_MODE                               | The current mode                                  |
+| Mode                                   | The enumeration of differents mode                |
 | vdf.@delayed                           | Delayed function (do nothing or dask.delayed)     |
 | vdf.concat(...)                        | Merge VDataFrame                                  |
 | vdf.read_csv(...)                      | Read VDataFrame from CSVs *glob* files            |
@@ -51,10 +53,11 @@
 | VSeries.to_ndarray()                   | Convert to numpy, cupy or dask array              |
 | VClient(...)                           | The connexion with the cluster                    |
 | import vdf.numpy                       | Import numpy or cupy                              |
-| vdf.numpy.array(...)                   | Create a numpy-like array                         |
+| vdf.numpy.array(..., chunks=...)       | Create a numpy-like array                         |
 | vdf.numpy.asnumpy(d)                   | Convert to numpy.ndarray                          |
-| VDF_MODE                               | The current mode                                  |
-| Mode                                   | The enumeration of differents mode                |
+| vdf.numpy.save(d)                      | Save to npy format                                |
+| vdf.numpy.load(d)                      | Load npy format                                   |
+| vdf.numpy.random.xxx(..., chunks=...)  | Generate random values                            |
 
 <sup>*</sup> some frameworks do not implement it
 

@@ -1,8 +1,13 @@
+import shutil
+import tempfile
+
 import numpy as np
 import numpy
+import pytest
 
 import virtual_dataframe as vdf
 import virtual_dataframe.numpy as vnp
+from virtual_dataframe import Mode
 
 
 def test_array():
@@ -102,37 +107,91 @@ def test_slicing():
 def test_asnumpy():
     assert isinstance(vnp.asnumpy(vnp.array([1, 2])), numpy.ndarray)
 
+
 # %% chunks
 def test_compute_chunk_sizes():
     vnp.arange(100_000, chunks=(100,)).compute_chunk_sizes().compute()
 
+
 def test_rechunk():
-    vnp.arange(100_000, chunks=(100, )).rechunk((200,200)).compute()
+    vnp.arange(100_000, chunks=(100,)).rechunk((200, 200)).compute()
+
 
 # %% Random
 def test_random_random():
     x = vnp.random.random((10000, 10000), chunks=(1000, 1000))
     # FIXME
 
+
 def test_random_binomial():
-    vnp.random.binomial(10,.5,1000,chunks=10)
+    vnp.random.binomial(10, .5, 1000, chunks=10)
+
 
 def test_random_normal():
-    vnp.random.normal(0,.1,1000,chunks=10)
+    vnp.random.normal(0, .1, 1000, chunks=10)
+
 
 def test_random_poisson():
-    vnp.random.poisson(5, 10000,chunks=100)
+    vnp.random.poisson(5, 10000, chunks=100)
+
 
 # %% from_...
 def test_from_array():
     data = np.arange(100_000).reshape(200, 500)
-    a = vnp.from_array(data, chunks=(100, 100))
+    vnp.from_array(data, chunks=(100, 100)).compute()
 
-def test_from_delayed():
-    pass
 
-def test_from_npy_stack():
-    pass
+def test_save_and_load_npy():
+    d = tempfile.mkdtemp()
+    try:
+        filename = f"{d}/test.npy"
+        d1 = vnp.arange(100_000).reshape(200, 500)
+        vnp.save(filename, d1)
+        d2 = vnp.load(filename)
+        assert vnp.array_equal(d1, d2)
+    finally:
+        shutil.rmtree(d)
 
-def test_from_zarr():
-    pass
+
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,),
+                    reason="Incompatible mode")
+def test_savez_and_load_npz():
+    d = tempfile.mkdtemp()
+    try:
+        filename = f"{d}/test.npz"
+        d1 = vnp.arange(1_000).reshape(10, 100)
+        vnp.savez(filename, arr=d1, allow_pickle=False)
+        npz = vnp.load(filename, mmap_mode=False, allow_pickle=False)
+        d2 = npz["arr"]
+        assert vnp.array_equal(d1, d2)
+    finally:
+        shutil.rmtree(d)
+
+
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,),
+                    reason="Incompatible mode")
+def test_savez_compressed_and_load_npz():
+    d = tempfile.mkdtemp()
+    try:
+        filename = f"{d}/test.npz"
+        d1 = vnp.arange(1_000).reshape(10, 100)
+        vnp.savez_compressed(filename, arr=d1, allow_pickle=False)
+        npz = vnp.load(filename, mmap_mode=False, allow_pickle=False)
+        d2 = npz["arr"]
+        assert vnp.array_equal(d1, d2)
+    finally:
+        shutil.rmtree(d)
+
+
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,),
+                    reason="Incompatible mode")
+def test_savetxt_and_loadtxt():
+    d = tempfile.mkdtemp()
+    try:
+        filename = f"{d}/test.txt"
+        d1 = vnp.arange(1_000).reshape(10, 100)
+        vnp.savetxt(filename, d1, delimiter=',', fmt='%1.4e')
+        d2 = vnp.loadtxt(filename, delimiter=',')
+        assert vnp.array_equal(d1, d2)
+    finally:
+        shutil.rmtree(d)
