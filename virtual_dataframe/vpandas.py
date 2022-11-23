@@ -8,6 +8,7 @@ import sys
 import warnings
 from functools import wraps
 
+from numba import TypingError
 from pandas._typing import Axes, Dtype, IndexLabel
 from typing import Any, List, Tuple, Optional, Union, Callable, Dict, Type, Iterator, Iterable, Sequence, Hashable
 
@@ -288,7 +289,7 @@ def _patch_pandas(pd_DataFrame, pd_Series, pd_NDArray):
     pd_DataFrame.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
     pd_DataFrame.to_backend = lambda self: self
     pd_DataFrame.to_backend.__doc__ = _doc_VDataFrame_to_pandas
-    pd_DataFrame.to_narray = pd_DataFrame.to_numpy
+    pd_DataFrame.to_ndarray = pd_DataFrame.to_numpy
 
     pd_DataFrame.apply_rows = _apply_rows
     pd_DataFrame.apply_rows.__doc__ = _doc_apply_rows
@@ -304,7 +305,7 @@ def _patch_pandas(pd_DataFrame, pd_Series, pd_NDArray):
     pd_DataFrame.visualize.__doc__ = _doc_VDataFrame_visualize
     pd_DataFrame.categorize = lambda self: self
     pd_DataFrame.categorize.__doc__ = _doc_categorize
-    pd_DataFrame.to_narray = pd_DataFrame.to_numpy
+    pd_DataFrame.to_ndarray = pd_DataFrame.to_numpy
 
     pd_Series.map_partitions = lambda self, func, *args, **kwargs: self.map(func, *args, *kwargs)
     pd_Series.map_partitions.__doc__ = _doc_VDataFrame_map_partitions
@@ -324,7 +325,7 @@ def _patch_pandas(pd_DataFrame, pd_Series, pd_NDArray):
     pd_Series.to_excel = _patch_to(pd_Series.to_excel, [], "cudf, dask and dask_cudf")
     pd_Series.to_hdf = _patch_to(pd_Series.to_hdf, [], "dask_cudf")
     pd_Series.to_json = _patch_to(pd_Series.to_json, [], "dask_cudf")
-    pd_Series.to_narray = pd_Series.to_numpy
+    pd_Series.to_ndarray = pd_Series.to_numpy
 
 
 def _patch_cudf(cu_DataFrame, cu_Series, cu_NDArray):
@@ -364,10 +365,10 @@ def _patch_cudf(cu_DataFrame, cu_Series, cu_NDArray):
     cu_DataFrame.categorize = lambda self: self
     cu_DataFrame.categorize.__doc__ = _doc_categorize
 
-    def _df_to_narray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
+    def _df_to_ndarray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
         return cupy.from_dlpack(self.to_dlpack())
 
-    cu_DataFrame.to_narray = _df_to_narray
+    cu_DataFrame.to_ndarray = _df_to_ndarray
 
     cu_Series.map_partitions = lambda self, func, *args, **kwargs: self.map(func, *args, *kwargs)
     cu_Series.map_partitions.__doc__ = cu_Series.map.__doc__
@@ -386,11 +387,11 @@ def _patch_cudf(cu_DataFrame, cu_Series, cu_NDArray):
     cu_Series.to_hdf = _patch_to(cu_Series.to_hdf, [], "dask_cudf")
     cu_Series.to_json = _patch_to(cu_Series.to_json, [], "dask_cudf")
 
-    def _series_to_narray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
+    def _series_to_ndarray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
         import cupy
         return cupy.from_dlpack(self.to_dlpack())
 
-    cu_Series.to_narray = _series_to_narray
+    cu_Series.to_ndarray = _series_to_ndarray
 
 
 if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.cudf, Mode.cupy, Mode.modin, Mode.dask_modin, Mode.pyspark):
@@ -466,9 +467,13 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
             out = _cache[cache_key]
             return out
         except KeyError:
-            kernel = numba.jit(func, nopython=True)
-            _cache[cache_key] = kernel
-            return kernel
+            try:
+                kernel = numba.jit(func, nopython=True)
+                _cache[cache_key] = kernel
+                return kernel
+            except TypingError:
+                _cache[cache_key] = None
+                return func
 
 
     def _apply_rows(
@@ -681,9 +686,13 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
             out = _cache[cache_key]
             return out
         except KeyError:
-            kernel = numba.jit(func, nopython=True)
-            _cache[cache_key] = kernel
-            return kernel
+            try:
+                kernel = numba.jit(func, nopython=True)
+                _cache[cache_key] = kernel
+                return kernel
+            except TypingError:
+                _cache[cache_key] = None
+                return func
 
 
     def _apply_rows(
@@ -873,6 +882,8 @@ if VDF_MODE == Mode.dask_cudf:
     _VDataFrame.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
     _VDataFrame.to_numpy = lambda self: self.compute().to_numpy()
     _VDataFrame.to_numpy.__doc__ = _doc_VDataFrame_to_numpy
+    _VDataFrame.to_ndarray = lambda self: self.compute().to_numpy()
+    _VDataFrame.to_ndarray.__doc__ = _doc_VSeries_to_numpy
 
     _VSeries.to_pandas = lambda self: self.compute().to_pandas()
     _VSeries.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
@@ -880,6 +891,8 @@ if VDF_MODE == Mode.dask_cudf:
     _VSeries.to_backend.__doc__ = _doc_VDataFrame_to_pandas
     _VSeries.to_numpy = lambda self: self.compute().to_numpy()
     _VSeries.to_numpy.__doc__ = _doc_VSeries_to_numpy
+    _VSeries.to_ndarray = lambda self: self.compute().to_numpy()
+    _VSeries.to_ndarray.__doc__ = _doc_VSeries_to_numpy
 
     _patch_cudf(BackEndDataFrame, BackEndSeries)
 
@@ -914,9 +927,13 @@ if VDF_MODE == Mode.dask:
             out = _cache[cache_key]
             return out
         except KeyError:
-            kernel = numba.jit(func, nopython=True)
-            _cache[cache_key] = kernel
-            return kernel
+            try:
+                kernel = numba.jit(func, nopython=True)
+                _cache[cache_key] = kernel
+                return kernel
+            except TypingError:
+                _cache[cache_key] = None
+                return func
 
 
     def _partition_apply_rows(
@@ -934,11 +951,9 @@ if VDF_MODE == Mode.dask:
         size = len(self)
         params = {param: self[col].to_numpy() for col, param in incols.items()}
         outputs = {param: numpy.empty(size, dtype) for param, dtype in outcols.items()}
-        _compile(func, cache_key)(**params, **outputs,
-                                  **kwargs,
-                                  )
+        func(**params, **outputs,**kwargs,)
         for col, data in outputs.items():
-            self[col] = data
+            self[col] = data.astype(outcols[col])
         return self
 
 
@@ -999,6 +1014,8 @@ if VDF_MODE == Mode.dask:
     _VDataFrame.to_backend.__doc__ = _doc_VDataFrame_to_pandas
     _VDataFrame.to_numpy = lambda self: self.compute().to_numpy()
     _VDataFrame.to_numpy.__doc__ = _doc_VDataFrame_to_numpy
+    _VDataFrame.to_ndarray = _VDataFrame.to_dask_array
+    _VDataFrame.to_ndarray.__doc__ = _VDataFrame.to_dask_array.__doc__
 
 
     def _patch_to_sql(f):
@@ -1019,6 +1036,8 @@ if VDF_MODE == Mode.dask:
     _VSeries.to_backend.__doc__ = _doc_VSeries_to_pandas
     _VSeries.to_numpy = lambda self: self.compute().to_numpy()
     _VSeries.to_numpy.__doc__ = _doc_VSeries_to_numpy
+    _VSeries.to_ndarray = _VSeries.to_dask_array
+    _VSeries.to_ndarray.__doc__ = _VSeries.to_dask_array.__doc__
 
     _patch_pandas(BackEndDataFrame, BackEndSeries, numpy.ndarray)
 

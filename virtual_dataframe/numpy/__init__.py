@@ -6,6 +6,7 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
     from functools import update_wrapper
     import numpy
     from inspect import getmembers
+    import sys
 
     FrontEndNumpy = numpy
 
@@ -103,6 +104,7 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
 
     update_wrapper(array, numpy.array)
 
+
 elif VDF_MODE in (Mode.cudf, Mode.cupy):
 
     import cupy
@@ -114,8 +116,14 @@ elif VDF_MODE in (Mode.cudf, Mode.cupy):
 elif VDF_MODE in (Mode.dask,):
 
     import dask.array
+    import numpy
 
     sys.modules[__name__] = dask.array  # Hack to replace this current module to another
 
-    dask.array.array_equal = dask.array.equal
+
+    def _dask_array_equal(a1, a2, equal_nan=False):
+        return numpy.array_equal(a1.compute(), a2.compute(), equal_nan=equal_nan)
+
+
+    dask.array.array_equal = _dask_array_equal
     dask.array.asnumpy = lambda x: x.compute()

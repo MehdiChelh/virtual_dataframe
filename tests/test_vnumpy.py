@@ -20,7 +20,7 @@ def test_array():
     )
 
 
-def test_DataFrame_to_narray():
+def test_DataFrame_to_ndarray():
     df = vdf.VDataFrame(
         {'a': [0.0, 1.0, 2.0, 3.0],
          'b': [1, 2, 3, 4],
@@ -28,8 +28,8 @@ def test_DataFrame_to_narray():
          },
         npartitions=2
     )
-    a = df.to_narray()
-    assert vnp.array_equal(
+    a = df.to_ndarray()
+    assert numpy.array_equal(
         vnp.asnumpy(a),
         np.array([
             [0.0, 1.0, 2.0, 3.0],
@@ -38,13 +38,13 @@ def test_DataFrame_to_narray():
         ]).T)
 
 
-def test_Series_to_narray():
+def test_Series_to_ndarray():
     serie = vdf.VSeries(
         [0.0, 1.0, 2.0, 3.0],
         npartitions=2
     )
-    a = serie.to_narray()
-    assert vnp.array_equal(
+    a = serie.to_ndarray()
+    assert numpy.array_equal(
         vnp.asnumpy(a),
         np.array(
             [0.0, 1.0, 2.0, 3.0],
@@ -60,7 +60,7 @@ def test_asarray():
         npartitions=2
     )
     a = vnp.asarray(df['a'])
-    vnp.array_equal(
+    numpy.array_equal(
         vnp.asnumpy(a),
         np.array(
             [0.0, 1.0, 2.0, 3.0],
@@ -81,7 +81,7 @@ def test_DataFrame_ctr():
             2: [10.0, 20.0, 30.0, 40.0]
         }
     )
-    assert df1.equals(df2)
+    assert vdf.compute((df1 == df2).all().all())
 
 
 def test_ctr_serie():
@@ -96,16 +96,14 @@ def test_random():
 
 
 def test_ctr():
-    assert vnp.array([1, 2]).compute(), "can not call compute()"
+    assert numpy.array_equal(
+        vnp.asnumpy(vnp.array([1, 2])),
+        numpy.array([1, 2])), "can not call compute()"
 
-
-# Not compatible with cudf
-def test_view():
-    a = np.arange(10)
-    a.view(vnp.ndarray)
 
 def test_slicing():
     assert vnp.array([1, 2])[1:].compute(), "can not call compute()"
+
 
 def test_asnumpy():
     assert isinstance(vnp.asnumpy(vnp.array([1, 2])), numpy.ndarray)

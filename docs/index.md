@@ -1,8 +1,9 @@
 ## Motivation
 
-With Panda like dataframe, do you want to create a code, and choose at the end, the framework to use?
+With Panda-like dataframe or numby-like, do you want to create a code, and choose at the end, the framework to use?
 Do you want to be able to choose the best framework after simply performing performance measurements?
-This framework unifies multiple Panda-compatible components, to allow the writing of a single code, compatible with all.
+This framework unifies multiple Panda-compatible or Numpy-comptaible components,
+to allow the writing of a single code, compatible with all.
 
 ## Synopsis
 
@@ -24,6 +25,8 @@ With some parameters, the real classes may be `pandas.DataFrame`, `modin.pandas.
 `pyspark.pandas.DataFrame` with GPU,
 `dask.dataframe.DataFrame` with Pandas or
 `dask.dataframe.DataFrame` with cudf (with Pandas or cudf for each partition).
+
+Or, for Numpy, the real classes may be `numpy.ndarray`, `cupy.ndarray` or `dask.array`.
 
 A new `@delayed` annotation can be use, with or without Dask.
 
@@ -53,7 +56,9 @@ With this framework, you can select your environment, to run or debug your code.
 | env                                                 | Environement                                |
 |-----------------------------------------------------|---------------------------------------------|
 | VDF_MODE=pandas                                     | Only Python with classical pandas           |
+| VDF_MODE=numpy                                      | Alias of pandas                             |
 | VDF_MODE=cudf                                       | Python with local cuDF (GPU)                |
+| VDF_MODE=cupy                                       | Alias of cudf                               |
 | VDF_MODE=dask                                       | Dask with local multiple process and pandas |
 | VDF_MODE=dask_cudf                                  | Dask with local multiple process and cuDF   |
 | VDF_MODE=dask<br />DEBUG=True                       | Dask with single thread and pandas          |

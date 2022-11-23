@@ -304,33 +304,35 @@ def test_DataFrame_map_partitions():
     assert result.to_pandas().equals(expected)
 
 def test_apply_rows():
+    import numpy
+
     df = vdf.VDataFrame(
         {'a': [0.0, 1.0, 2.0, 3.0],
-         'b': [1, 2, 3, 4],
-         'c': [10, 20, 30, 40]
+         'b': [1., 2., 3., 4.],
+         'c': [10., 20., 30., 40.]
          },
         npartitions=2
     )
 
     def my_kernel(a_s, b_s, c_s, val, out):  # Compilé pour Kernel GPU
         for i, (a, b, c) in enumerate(zip(a_s, b_s, c_s)):
-            out[i] = (a + b + c) * val
+            out[i] = int((a + b + c) * val)
 
     expected = pandas.DataFrame(
         {'a': [0.0, 1.0, 2.0, 3.0],
-         'b': [1, 2, 3, 4],
-         'c': [10, 20, 30, 40],
+         'b': [1., 2., 3., 4.],
+         'c': [10., 20., 30., 40.],
          'out': [33, 69, 105, 141]
          })
     r = df.apply_rows(
         my_kernel,
         incols={'a': 'a_s', 'b': 'b_s', 'c': 'c_s'},
-        outcols={'out': np.int64},  # Va créer une place pour chaque row, pour le résultat
+        outcols={'out': numpy.int64},  # Va créer une place pour chaque row, pour le résultat
         kwargs={
             "val": 3
         },
         cache_key="abc",
-    ).compute()
-    assert r.to_pandas().equals(expected)
+    ).compute().to_pandas()
+    assert r.equals(expected)
 
 

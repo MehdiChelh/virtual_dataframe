@@ -4,9 +4,10 @@
 
 ## Motivation
 
-With Panda-like dataframe, do you want to create a code, and choose at the end, the framework to use?
+With Panda-like dataframe or numby-like, do you want to create a code, and choose at the end, the framework to use?
 Do you want to be able to choose the best framework after simply performing performance measurements?
-This framework unifies multiple Panda-compatible components, to allow the writing of a single code, compatible with all.
+This framework unifies multiple Panda-compatible or Numpy-comptaible components,
+to allow the writing of a single code, compatible with all.
 
 ## Synopsis
 
@@ -28,7 +29,12 @@ you must manage:
 - `dask.DataFrame`, `dask.Series`
 - `pyspark.pandas.DataFrame`, `pyspark.pandas.Series`
 
- With `cudf`, the code must call `.to_pandas()`. With dask, the code must call `.compute()`, can use `@delayed` or
+With numpy, you must manage:
+- `numpy.ndarray`
+- `cupy.ndarray`
+- `dask.array`
+
+ With `cudf` or `cudf`, the code must call `.to_pandas()` or `asnumpy()`. With dask, the code must call `.compute()`, can use `@delayed` or
 `dask.distributed.Client`. etc.
 
 We propose to replace all these classes and scenarios, with a *uniform model*,

@@ -9,13 +9,13 @@ import virtual_dataframe as vdf
 from virtual_dataframe import Mode
 
 
-def test_Series_persist(vclient):
+def test_Series_persist():
     s = vdf.VSeries([1])
     rc = s.persist()
     assert rc.to_pandas().equals(s.to_pandas())
 
 
-def test_Series_repartition(vclient):
+def test_Series_repartition():
     s = vdf.VSeries([1])
     rc = s.repartition(npartitions=1)
     assert rc.to_pandas().equals(s.to_pandas())
