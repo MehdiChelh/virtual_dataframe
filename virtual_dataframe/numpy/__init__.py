@@ -1,8 +1,50 @@
+from typing import Tuple
+
+import dask_cudf.core
+
 from virtual_dataframe import VDF_MODE, Mode
 import sys
 from functools import wraps
 
-if VDF_MODE in (Mode.pandas, Mode.numpy):
+
+def _patch_cupy():
+    import cupy
+    cupy.ndarray.compute = lambda self: self
+    cupy.ndarray.compute_chunk_sizes = lambda self: self
+    cupy.ndarray.rechunk = lambda self, *args, **kwargs: self
+
+    class _Random:
+        def __init__(self, target):
+            self.target = target
+
+        def __getattr__(self, attr):
+            func = getattr(self.target, attr)
+
+            @wraps(func)
+            def _wrapped(*args, **kwargs):
+                kwargs.pop("chunks", None)
+                return func(*args, **kwargs)
+
+            return _wrapped
+
+    cupy.random = _Random(cupy.random)
+
+    def _wrapper(func):
+        @wraps(func)
+        def _wrapped(*args, **kwargs):
+            kwargs.pop("chunks", None)
+            return func(*args, **kwargs)
+
+        return _wrapped
+
+    cupy.arange = _wrapper(cupy.arange)
+    cupy.from_array = _wrapper(cupy.array)
+    cupy.compute = lambda *args,**kwargs: tuple(args)
+
+
+
+
+if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin):
 
     from functools import update_wrapper
     import numpy
@@ -55,7 +97,6 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
             # - *kwargs* contains any optional or keyword arguments passed to the
             #   function. This includes any ``out`` arguments, which are always
             #   contained in a tuple.
-            print(f"call __array_ufunc__({ufunc=},{method=},{inputs=},{out=},{kwargs=})")
             args = []
             in_no = []
             for i, input_ in enumerate(inputs):
@@ -117,6 +158,11 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
     def asnumpy(d):
         return d
 
+    def compute(*args,  # noqa: F811
+                **kwargs
+                ) -> Tuple:
+        return tuple(args)
+
     update_wrapper(array, numpy.array)
     update_wrapper(arange, numpy.arange)
 
@@ -162,63 +208,36 @@ elif VDF_MODE in (Mode.cudf, Mode.cupy):
 
     sys.modules[__name__] = cupy  # Hack to replace this current module to another
 
-    cupy.ndarray.compute = lambda self: self
-    cupy.ndarray.compute_chunk_sizes = lambda self: self
-    cupy.ndarray.rechunk = lambda self, *args, **kwargs: self
+    _patch_cupy()
 
-
-    class _Random:
-        def __init__(self, target):
-            self.target = target
-
-        def __getattr__(self, attr):
-            func = getattr(self.target, attr)
-
-            @wraps(func)
-            def _wrapped(*args, **kwargs):
-                kwargs.pop("chunks", None)
-                return func(*args, **kwargs)
-
-            return _wrapped
-
-
-    cupy.random = _Random(cupy.random)
-
-
-    def _wrapper(func):
-        @wraps(func)
-        def _wrapped(*args, **kwargs):
-            kwargs.pop("chunks", None)
-            return func(*args, **kwargs)
-
-        return _wrapped
-
-
-    cupy.arange = _wrapper(cupy.arange)
-    cupy.from_array = _wrapper(cupy.array)
-
-elif VDF_MODE in (Mode.dask,Mode.dask_array):
+elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf):
 
     import dask.array
     import numpy
+    import cupy
 
     sys.modules[__name__] = dask.array  # Hack to replace this current module to another
 
+    _patch_cupy()
 
-    def _not_implemented(*args, **kwargs):
-        raise NotImplementedError()
-
-
-    def _dask_array_equal(a1, a2, equal_nan=False):
-        return numpy.array_equal(a1.compute(), a2.compute(), equal_nan=equal_nan)
+    dask.array.asnumpy = lambda df: cupy.asnumpy(df.compute())
+    _old_asarray = dask.array.asarray
 
 
-    dask.array.array_equal = _dask_array_equal
-    dask.array.asnumpy = lambda x: x.compute()
+    def _asarray(
+            a, allow_unknown_chunksizes=False, dtype=None, order=None, *, like=None, **kwargs
+    ):
+        if isinstance(a, (dask_cudf.core.DataFrame, dask_cudf.core.Series)):
+            return a.compute().to_cupy()
+        else:
+            return _old_asarray(a,
+                                allow_unknown_chunksizes=allow_unknown_chunksizes,
+                                dtype=dtype,
+                                order=order,
+                                like=like,
+                                **kwargs)
 
+
+    dask.array.asarray = _asarray
     dask.array.save = dask.array.to_npy_stack
-    dask.array.savez = _not_implemented
-    dask.array.savez_compressed = _not_implemented
-    dask.array.savetxt = _not_implemented
     dask.array.load = dask.array.from_npy_stack
-    dask.array.loadtxt = _not_implemented

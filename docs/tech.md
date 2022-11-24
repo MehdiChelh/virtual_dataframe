@@ -28,9 +28,9 @@
 - Add `vdf.FrontEndNumpy = numpy`
 
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
-- FIXME Add `vdf.concat()` an alias of `panda.concat()`
-- FIXME Add `vdf.delayed()` to TODO and empty image and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
-- FIXME Add `vdf.persist()` to TODO and empty image and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
+- Add `vdf.concat()` an alias of `panda.concat()`
+- Add `vdf.delayed()` to delay a calland be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
+- Add `vdf.persist()` to parameters and empty image and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
 - Add `vdf.visualize()` to return an empty image and be compatible with [`dask.visualize()`](https://docs.dask.org/en/stable/api.html#dask.visualize)
 
 - Add `vdf.from_pandas()` to return df and be compatible with [`dask.from_pandas()](https://docs.dask.org/en/stable/generated/dask.dataframe.from_pandas.html)
@@ -76,8 +76,8 @@
 - Add `vdf.FrontEndNumpy = cupy`
 
 - Add `vdf.compute()` to return an tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
-- FIXME Add `vdf.concat()` an alias of `panda.concat()`
-- FIXME Add `vdf.delayed()` to TODO and empty image and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
+- Add `vdf.concat()` an alias of `panda.concat()`
+- Add `vdf.delayed()` to delay a calland be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
 - Add `vdf.persist()` to parameters and empty image and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
 - Add `vdf.visualize()` to return an empty image and be compatible with [`dask.visualize()`](https://docs.dask.org/en/stable/api.html#dask.visualize)
 
@@ -114,24 +114,26 @@
 - Add `Series.repartition()` to return `self` and be compatible with ['dask.Series.repartition()](https://docs.dask.org/en/stable/generated/dask.dataframe.Series.repartition.html)
 - Add `Series.visualize()` to return `visualize(self)` and be compatible with ['dask.Series.visualize()](https://docs.dask.org/en/stable/generated/dask.dataframe.Series.visualize.html)
 
-## Modin or Dask_Modin
+## modin or dask_modin
+- Set `MODIN_ENGINE=dask` for `dask_modin`
+- Set `MODIN_ENGINE=python` for `modin`
 - Add `vdf.BackEndDataFrame = modin.pandas.DataFrame`
 - Add `vdf.BackEndSeries = modin.pandas.Series`
-- TODO Add `vdf.BackEndArray = numpy.ndarray`
+- Add `vdf.BackEndArray = numpy.ndarray`
 - Add `vdf.BackEnd = modin.pandas`
 - Add `vdf.FrontEnd = modin.pandas`
-- TODO Add `vdf.FrontEndNumpy = numpy`
+- Add `vdf.FrontEndNumpy = numpy`
 
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
-- FIXME Add `vdf.concat()` an alias of `modin.pandas.concat()`
-- FIXME Add `vdf.delayed()` to TODO and empty image and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
-- FIXME Add `vdf.persist()` to TODO and empty image and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
+- Add `vdf.concat()` an alias of `modin.pandas.concat()`
+- Add `vdf.delayed()` to delay a calland be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
+- Add `vdf.persist()` to parameters and empty image and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
 - Add `vdf.visualize()` to return an empty image and be compatible with [`dask.visualize()`](https://docs.dask.org/en/stable/api.html#dask.visualize)
 
 - Add `vdf.from_pandas()` to return modin DataFrame or Series and be compatible with [`dask.from_pandas()](https://docs.dask.org/en/stable/generated/dask.dataframe.from_pandas.html)
 - Add `vdf.from_backend()` an alias of `from_pandas()`
 
-- FIXME Add `vdf.numpy` an alias of `numpy` module
+- Add `vdf.numpy` an alias of `numpy` module
 
 - Remove extra parameters used by Dask in:
   - `*.to_csv()`, `*.to_excel()`, `*.to_feather()`, `*.to_hdf()`, `*.to_json()`
@@ -157,9 +159,9 @@
 - Add `DF.visualize()` to return `visualize(self)` and be compatible with [`dask.DataFrame.visualize()](https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.visualize.html)
 - Add `DF.categorize()` to return `self` and be compatible with [`dask.DataFrame.categorize()](https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.categorize.html)
 
-- FIXME Add `Series.to_pandas()` to return `modin.pandas.Series.to_pandas()`
+- Add `Series.to_pandas()` to return `modin.pandas.Series.to_pandas()`
 - Add `Series.to_backend()` to return `self`
-- FIXME Add `Series.to_ndarray()` alias of `to_numpy`
+- Add `Series.to_ndarray()` alias of `to_numpy`
 
 - Add `Series.compute()` to return `self` and be compatible with [`dask.Series.compute()](https://docs.dask.org/en/stable/generated/dask.dataframe.Series.compute.html)
 - Add `Series.map_partitions()` to return `self.map()` and be compatible with [`dask.Series.map_partitions()](https://docs.dask.org/en/stable/generated/dask.dataframe.Series.map_partitions.html)
@@ -178,7 +180,7 @@
 - Add `vdf.FrontEnd = dask.dataframe`
 - Add `vdf.FrontEndNumpy = dask.array`
 
-- FIXME Add `vdf.concat()` an alias of `dask.dataframe.multi.concat()`
+- Add `vdf.concat()` an alias of `dask.dataframe.multi.concat()`
 
 - Add `vdf.from_pandas()` an alias of `dask.dataframe.from_pandas()`
 - Add `vdf.from_backend()` an alias of `from_pandas()`
@@ -209,10 +211,10 @@
 - Add `vdf.BackEndArray = cudf`
 - Add `vdf.BackEnd = pandas`
 - Add `vdf.FrontEnd = dask_cudf`
-- FIXME Add `vdf.FrontEndNumpy = numpy`
+- Add `vdf.FrontEndNumpy = cupy`
 
 - Add `vdf.compute()` to `dask.compute()`
-- FIXME Add `vdf.concat()` to `dask.dataframe.multi.concat()`
+- Add `vdf.concat()` to `dask.dataframe.multi.concat()`
 - Add `vdf.delayed()` to `dask.delayed()`
 - Add `vdf.persist()` to `dask.persist()`
 - Add `vdf.visualize()` to `dask.visualize()`
@@ -255,9 +257,9 @@
 - FIXME Add `vdf.FrontEndNumpy = numpy`
 
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
-- FIXME Add `vdf.concat()` an alias of `pyspark.pandas.concat()`
-- FIXME Add `vdf.delayed()` to TODO and empty image and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
-- FIXME Add `vdf.persist()` to TODO and empty image and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
+- Add `vdf.concat()` an alias of `pyspark.pandas.concat()`
+- Add `vdf.delayed()` to delay a call and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
+- Add `vdf.persist()` to persist the graph and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
 - Add `vdf.visualize()` to return an empty image and be compatible with [`dask.visualize()`](https://docs.dask.org/en/stable/api.html#dask.visualize)
 
 - Add `vdf.from_backend()` an alias of `from_pandas()`

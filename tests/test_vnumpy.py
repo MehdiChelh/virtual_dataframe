@@ -3,11 +3,12 @@ import tempfile
 
 import numpy as np
 import numpy
+import cupy
 import pytest
 
 import virtual_dataframe as vdf
 import virtual_dataframe.numpy as vnp
-from virtual_dataframe import Mode
+from virtual_dataframe import Mode, VDF_MODE
 
 
 def test_array():
@@ -34,6 +35,7 @@ def test_DataFrame_to_ndarray():
         npartitions=2
     )
     a = df.to_ndarray()
+    assert VDF_MODE not in (Mode.dask_cudf,) or isinstance(a, cupy.ndarray)
     assert numpy.array_equal(
         vnp.asnumpy(a),
         np.array([
@@ -49,6 +51,7 @@ def test_Series_to_ndarray():
         npartitions=2
     )
     a = serie.to_ndarray()
+    assert VDF_MODE not in (Mode.dask_cudf,) or isinstance(a, cupy.ndarray)
     assert numpy.array_equal(
         vnp.asnumpy(a),
         np.array(
@@ -65,6 +68,7 @@ def test_asarray():
         npartitions=2
     )
     a = vnp.asarray(df['a'])
+    assert VDF_MODE not in (Mode.dask_cudf,) or isinstance(a, cupy.ndarray)
     numpy.array_equal(
         vnp.asnumpy(a),
         np.array(
@@ -78,7 +82,7 @@ def test_DataFrame_ctr():
         [1, 2, 3, 4],
         [10, 20, 30, 40]
     ])
-    df1 = vdf.VDataFrame(a.T)
+    df1 = vdf.VDataFrame(a.T.compute())
     df2 = vdf.VDataFrame(
         {
             0: [0.0, 1.0, 2.0, 3.0],
@@ -119,8 +123,7 @@ def test_rechunk():
 
 # %% Random
 def test_random_random():
-    x = vnp.random.random((10000, 10000), chunks=(1000, 1000))
-    # FIXME
+    vnp.random.random((10000, 10000), chunks=(1000, 1000))
 
 
 def test_random_binomial():
@@ -148,12 +151,12 @@ def test_save_and_load_npy():
         d1 = vnp.arange(100_000).reshape(200, 500)
         vnp.save(filename, d1)
         d2 = vnp.load(filename)
-        assert vnp.array_equal(d1, d2)
+        assert vnp.compute((d1 == d2).all())
     finally:
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,Mode.dask_array),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf),
                     reason="Incompatible mode")
 def test_savez_and_load_npz():
     d = tempfile.mkdtemp()
@@ -163,12 +166,12 @@ def test_savez_and_load_npz():
         vnp.savez(filename, arr=d1, allow_pickle=False)
         npz = vnp.load(filename, mmap_mode=False, allow_pickle=False)
         d2 = npz["arr"]
-        assert vnp.array_equal(d1, d2)
+        assert vnp.compute((d1 == d2).all())
     finally:
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,Mode.dask_array),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf),
                     reason="Incompatible mode")
 def test_savez_compressed_and_load_npz():
     d = tempfile.mkdtemp()
@@ -183,7 +186,7 @@ def test_savez_compressed_and_load_npz():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,Mode.dask_array),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf),
                     reason="Incompatible mode")
 def test_savetxt_and_loadtxt():
     d = tempfile.mkdtemp()

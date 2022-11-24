@@ -14,7 +14,7 @@ from typing import Any, List, Tuple, Optional, Union, Callable, Dict, Type, Iter
 
 from .env import VDF_MODE, Mode
 
-# TODO: Use https://docs.python.org/fr/3/library/functools.html#functools.wraps ?
+# PPR: Use https://docs.python.org/fr/3/library/functools.html#functools.wraps ?
 # %% docs
 _doc_delayed = ''' Fake @dask.delayed. Do nothing.'''
 _doc_from_pandas = '''
@@ -634,7 +634,7 @@ if VDF_MODE in (Mode.cudf, Mode.cupy):
     read_parquet = FrontEnd.read_parquet
     read_sql_table = _not_implemented
 
-    _patch_cudf(_VDataFrame, _VSeries, BackEndNDArray)
+    _patch_cudf(_VDataFrame, _VSeries, cupy.ndarray)
 
 # %% modin dask_modin
 if VDF_MODE in (Mode.modin, Mode.dask_modin):
@@ -652,9 +652,11 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
 
     BackEndDataFrame: Any = modin.pandas.DataFrame
     BackEndSeries: Any = modin.pandas.Series
+    BackEndNDArray: Any = numpy.ndarray
     BackEnd = modin.pandas
 
     FrontEnd = modin.pandas
+    FrontEndNumpy = numpy
 
     _VDataFrame: Any = BackEndDataFrame
     _VSeries: Any = BackEndSeries
@@ -742,7 +744,7 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     visualize.__doc__ = _doc_visualize
 
     from_pandas: Any = lambda data, npartitions=1, chuncksize=None, sort=True, name=None: \
-        modin.pandas.DataFrame(data) if isinstance(data, pandas.DataFrame) else modin.pandas.Series(data)
+        modin.pandas.DataFrame(data) if isinstance(data, (pandas.DataFrame, modin.pandas.DataFrame)) else modin.pandas.Series(data)
     from_pandas.__doc__ = _doc_from_pandas
 
     from_backend: Any = from_pandas
@@ -771,7 +773,6 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     _VDataFrame.to_backend = lambda self: self
     _VDataFrame.to_backend.__doc__ = _doc_VDataFrame_to_pandas
 
-
     _VDataFrame.to_ndarray = _VDataFrame.to_numpy
     _VDataFrame.to_ndarray.__doc__ = _doc_VDataFrame_to_numpy
 
@@ -792,6 +793,8 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     _VSeries.to_pandas.__doc__ = _doc_VSeries_to_pandas
     _VSeries.to_backend = lambda self: self
     _VSeries.to_backend.__doc__ = _doc_VSeries_to_pandas
+    _VSeries.to_ndarray = _VSeries.to_numpy
+    _VSeries.to_ndarray.__doc__ = _VSeries.to_numpy
 
     _VSeries.to_csv = _patch_to(_VSeries.to_csv, [], "cudf, dask and dask_cudf")
     _VSeries.to_excel = _patch_to(_VSeries.to_excel, [], "cudf, dask and dask_cudf")
@@ -814,6 +817,7 @@ if VDF_MODE == Mode.dask_cudf:
     import pandas
     import dask
     import dask.dataframe
+    import cupy
 
     try:
         import dask_cudf
@@ -825,9 +829,11 @@ if VDF_MODE == Mode.dask_cudf:
 
     BackEndDataFrame: Any = cudf.DataFrame
     BackEndSeries: Any = cudf.Series
+    BackEndNDArray: Any = cupy.ndarray
     BackEnd = cudf
 
     FrontEnd = dask_cudf
+    FrontEndNumpy = cupy
 
     _VDataFrame: Any = dask_cudf.DataFrame
     _VSeries: Any = dask_cudf.Series
@@ -854,6 +860,8 @@ if VDF_MODE == Mode.dask_cudf:
             path_or_buf = path_or_buf + "/*"
         return FrontEnd.read_json(path_or_buf, **kwargs)
 
+    def _df_to_ndarray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
+        return cupy.from_dlpack(self.compute().to_dlpack())
 
     # dask_cudf
     read_csv = FrontEnd.read_csv
@@ -879,8 +887,8 @@ if VDF_MODE == Mode.dask_cudf:
     _VDataFrame.to_backend.__doc__ = _doc_VDataFrame_to_pandas
     _VDataFrame.to_numpy = lambda self: self.compute().to_numpy()
     _VDataFrame.to_numpy.__doc__ = _doc_VDataFrame_to_numpy
-    _VDataFrame.to_ndarray = lambda self: self.compute()  # FIXME: TU
-    _VDataFrame.to_ndarray.__doc__ = _doc_VSeries_to_numpy
+    _VDataFrame.to_ndarray = _df_to_ndarray  # FIXME: TU
+    _VDataFrame.to_ndarray.__doc__ = _doc_VDataFrame_to_numpy
 
     _VSeries.to_pandas = lambda self: self.compute().to_pandas()
     _VSeries.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
@@ -888,10 +896,10 @@ if VDF_MODE == Mode.dask_cudf:
     _VSeries.to_backend.__doc__ = _doc_VDataFrame_to_pandas
     _VSeries.to_numpy = lambda self: self.compute().to_numpy()
     _VSeries.to_numpy.__doc__ = _doc_VSeries_to_numpy
-    _VSeries.to_ndarray = lambda self: self.compute()  # FIXME: TU cupy.ndarray ?
+    _VSeries.to_ndarray = _df_to_ndarray  # FIXME: TU cupy.ndarray ?
     _VSeries.to_ndarray.__doc__ = _doc_VSeries_to_numpy
 
-    _patch_cudf(BackEndDataFrame, BackEndSeries)
+    _patch_cudf(BackEndDataFrame, BackEndSeries, cupy.ndarray)
 
 # %% dask
 if VDF_MODE in (Mode.dask,Mode.dask_array):
@@ -1194,10 +1202,6 @@ if VDF_MODE == Mode.pyspark:
 
     # noinspection PyUnusedLocal
     def compute(*args,  # noqa: F811
-                traverse: bool = True,
-                optimize_graph: bool = True,
-                scheduler: bool = None,
-                get=None,
                 **kwargs
                 ) -> Tuple:
         return tuple(args)

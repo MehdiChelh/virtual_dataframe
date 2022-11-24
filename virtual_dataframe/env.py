@@ -25,13 +25,13 @@ from enum import Enum
 
 class Mode(Enum):
     pandas = "pandas"
-    numpy = "numpy"
+    numpy = "numpy"  # Alias of pandas
     cudf = "cudf"
-    cupy = "cupy"
+    cupy = "cupy"  # Alias of cupy
     dask = "dask"
-    dask_array = "dask_array"
     modin = "modin"
     pyspark = "pyspark"
+    dask_array = "dask_array"  # Alias of dask
     dask_modin = "dask_modin"
     # ray_modin = "ray_modin"
     dask_cudf = "dask_cudf"
