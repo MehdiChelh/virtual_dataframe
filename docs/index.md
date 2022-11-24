@@ -56,10 +56,11 @@ With this framework, you can select your environment, to run or debug your code.
 | env                                                 | Environement                                |
 |-----------------------------------------------------|---------------------------------------------|
 | VDF_MODE=pandas                                     | Only Python with classical pandas           |
-| VDF_MODE=numpy                                      | Alias of pandas                             |
+| VDF_MODE=numpy                                      | Alias of `pandas`                             |
 | VDF_MODE=cudf                                       | Python with local cuDF (GPU)                |
 | VDF_MODE=cupy                                       | Alias of cudf                               |
 | VDF_MODE=dask                                       | Dask with local multiple process and pandas |
+| VDF_MODE=dask_array                                 | Alias of `dask`                               |
 | VDF_MODE=dask_cudf                                  | Dask with local multiple process and cuDF   |
 | VDF_MODE=dask<br />DEBUG=True                       | Dask with single thread and pandas          |
 | VDF_MODE=dask_cudf<br />DEBUG=True                  | Dask with single thread and cuDF            |

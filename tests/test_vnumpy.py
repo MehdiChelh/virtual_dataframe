@@ -153,7 +153,7 @@ def test_save_and_load_npy():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,Mode.dask_array),
                     reason="Incompatible mode")
 def test_savez_and_load_npz():
     d = tempfile.mkdtemp()
@@ -168,7 +168,7 @@ def test_savez_and_load_npz():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,Mode.dask_array),
                     reason="Incompatible mode")
 def test_savez_compressed_and_load_npz():
     d = tempfile.mkdtemp()
@@ -183,7 +183,7 @@ def test_savez_compressed_and_load_npz():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask,Mode.dask_array),
                     reason="Incompatible mode")
 def test_savetxt_and_loadtxt():
     d = tempfile.mkdtemp()

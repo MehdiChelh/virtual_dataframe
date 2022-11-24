@@ -91,11 +91,11 @@ Each cell is strongly compatible with the upper left part.
 ### No need of GPU?
 If you don't need to use a GPU, then develop for `dask` and use mode in *bold*.
 
-|       | small data                | middle data             | big data                                         |
-|-------|---------------------------|-------------------------|--------------------------------------------------|
-| 1-CPU | **pandas<br/>*Limits:+*** |                         |                                                  |
-| n-CPU |                           | **modin<br/>*Limits+*** | **dask, dask_modin or pyspark<br/>*Limits:++***  |
-| *GPU* | *cudf<br/>Limits:++*      |                         | *dask_cudf, pyspark+spark-rapids<br/>Limits:+++* |
+|       | small data                        | middle data             | big data                                         |
+|-------|-----------------------------------|-------------------------|--------------------------------------------------|
+| 1-CPU | **pandas / numpy<br/>*Limits:+*** |                         |                                                  |
+| n-CPU |                                   | **modin<br/>*Limits+*** | **dask, dask_modin or pyspark<br/>*Limits:++***  |
+| *GPU* | *cudf / cupy<br/>Limits:++*       |                         | *dask_cudf, pyspark+spark-rapids<br/>Limits:+++* |
 
 You can ignore this API:
 

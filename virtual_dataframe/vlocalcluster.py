@@ -79,7 +79,7 @@ def _new_VLocalCluster(
         return _LocalClusterDummy()
     elif mode == Mode.pyspark:
         return SparkLocalCluster(**kwargs)
-    elif mode in (Mode.dask, Mode.dask_modin):
+    elif mode in (Mode.dask, Mode.dask_array, Mode.dask_modin):
         from dask.distributed import LocalCluster
         # Purge kwargs
         for key in params_cuda_local_cluster:

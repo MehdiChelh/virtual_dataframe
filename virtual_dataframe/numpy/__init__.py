@@ -114,6 +114,9 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
         return numpy.arange(start, *args, **kwargs).view(Vnarray)
 
 
+    def asnumpy(d):
+        return d
+
     update_wrapper(array, numpy.array)
     update_wrapper(arange, numpy.arange)
 
@@ -194,7 +197,7 @@ elif VDF_MODE in (Mode.cudf, Mode.cupy):
     cupy.arange = _wrapper(cupy.arange)
     cupy.from_array = _wrapper(cupy.array)
 
-elif VDF_MODE in (Mode.dask,):
+elif VDF_MODE in (Mode.dask,Mode.dask_array):
 
     import dask.array
     import numpy
