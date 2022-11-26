@@ -399,8 +399,14 @@ endif
 	touch $(CONDA_PACKAGE)
 
 
+sqplite-jbd-3.34.0.jar:
+	wget https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.34.0/sqlite-jdbc-3.34.0.jar
+
+rapids-4-spark_2.12-22.10.0.jar:
+	wget https://repo1.maven.org/maven2/com/nvidia/rapids-4-spark_2.12/22.10.0/rapids-4-spark_2.12-22.10.0.jar
+
 .PHONY: requirements dependencies
-REQUIREMENTS= $(CONDA_PACKAGE) $(PIP_PACKAGE) \
+REQUIREMENTS= $(CONDA_PACKAGE) $(PIP_PACKAGE) sqplite-jbd-3.34.0.jar rapids-4-spark_2.12-22.10.0.jar \
 	.gitattributes
 requirements: $(REQUIREMENTS)
 dependencies: requirements

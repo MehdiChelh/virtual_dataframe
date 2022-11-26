@@ -251,11 +251,12 @@
 ## pyspark
 - Add `vdf.BackEndDataFrame = pandas.DataFrame`
 - Add `vdf.BackEndSeries = pandas.Series`
-- FIXME Add `vdf.BackEndArray = numpy.ndarray`
+- Add `vdf.BackEndArray = numpy.ndarray`
 - Add `vdf.BackEnd = pandas`
 - Add `vdf.FrontEnd = pyspark.pandas`
-- FIXME Add `vdf.FrontEndNumpy = numpy`
+- Add `vdf.FrontEndNumpy = numpy`
 
+- Call `pyspark.pandas.set_option('compute.ops_on_diff_frames',True)`
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
 - Add `vdf.concat()` an alias of `pyspark.pandas.concat()`
 - Add `vdf.delayed()` to delay a call and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
@@ -279,7 +280,7 @@
   - `vdf.read_feather()`, `vdf.read_fwf()`, `vdf.read_hdf()`
   - `DF.to_sql()`, `Series.to_sql()`
 - Add `DF.to_backend()` an alias of `to_pandas()`
-- FIXME Add `DF.to_ndarray()` an alias to `to_numpy()`
+- Add `DF.to_ndarray()` an alias to `to_numpy()`
 
 - Add `DF.apply_rows()` to be compatible with [`cudf.apply_rows()`](https://docs.rapids.ai/api/cudf/nightly/api_docs/api/cudf.DataFrame.apply_rows.html)
 - Add `DF.categorize()` to return `self` and be compatible with [`dask.DataFrame.categorize()](https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.categorize.html)
@@ -290,7 +291,7 @@
 - Add `DF.visualize()` to return `visualize(self)` and be compatible with [`dask.DataFrame.visualize()](https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.visualize.html)
 
 - Add `Series.to_backend()` alias of `to_pandas()`
-- FIXME Add `Series.to_ndarray()` alias of `to_numpy()`
+- Add `Series.to_ndarray()` alias of `to_numpy()`
 
 - Add `Series.compute()` to return `self` and be compatible with [`dask.Series.compute()](https://docs.dask.org/en/stable/generated/dask.dataframe.Series.compute.html)
 - Add `Series.map_partitions()` to return `self.map()` and be compatible with [`dask.Series.map_partitions()](https://docs.dask.org/en/stable/generated/dask.dataframe.Series.map_partitions.html)
@@ -301,10 +302,50 @@
 # Numpy like familly
 
 ## Numpy
-TODO
+
+It's not possible to update some method in Numpy. So we must use
+a sub-class of `ndarray` and the differents protocoles describe
+[here](https://numpy.org/doc/stable/user/basics.subclassing.html).
+
+- The `virtual_dataframe.numpy` import all module members of `numpy`
+- A `Vnarray` subclassing `numpy.narray`
+- Add `Vnarray.compute()` to return `self`
+- Add `Vnarray.compute_chunk_sizes()` to return `self`
+- Add `Vnarray.rechunk()` to return `self`
+- A `nparray.view(Vnarray)` is called when necessary
+- Add `vdf.numpy.array()` invoke `numpy.array()` and return a view with `Vnarray`
+- Add `vdf.numpy.arange()`, remove the parameter `chunks`, invoke `numpy.arange()` and return a view with `Vnarray`
+- Add `vdf.numpy.asnumpy()` to return df
+- Add `vdf.numpy.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
+- Add `vdf.numpy.random.*` with a wrapper to add a view of `Vnarray` for each *random* method
+- Add `vdf.numpy.from_array()` to return `numpy.array()`
+- Add `vdf.numpy.load()` to return `numpy.load()`
+- Add `vdf.numpy.save()` to return `numpy.save()`
+- Add `vdf.numpy.savez()` to return `numpy.savez()`
 
 ## cupy
-TODO
+
+- Add `cupy.ndarray.compute()` to return `self`
+- Add `cupy.ndarray.compute_chunk_sizes()` to return `self`
+- Add `cupy.ndarray.rechunk()` to return `self`
+- Add `cupy.numpy.random.*` with a wrapper to remove the parameter `chunks` for each *random* method
+- Update `cupy.arange()` to remove the parameter `chunks`
+- Update `cupy.from_array()` to remove the parameter `chunks`
+- Add `cupy.compute()`
+- The module `virtual_dataframe.numpy` is dynamically change to `numpy`
 
 ## dask_array
-TODO
+
+- Add `dask.array.asnumpy()` to return `cupy.asnumpy(df.compute())`
+- Add `dask.array.asarray()` to return `a.compute().to_cupy()`
+- Add `vdf.numpy.load()` to return `dask.array.from_npy_stack()`
+- Add `vdf.numpy.save()` to return `dask.array.to_npy_stack()`
+- The module `virtual_dataframe.numpy` is dynamically change to `dask.array`
+
+## dask_cupy
+- Apply all the patch of `cupy` describe [here](#cupy)
+- Add `dask.array.asnumpy()` to return `cupy.asnumpy(df.compute())`
+- Add `dask.array.asarray()` to return `a.compute().to_cupy()`
+- Add `vdf.numpy.load()` to return `dask.array.from_npy_stack()`
+- Add `vdf.numpy.save()` to return `dask.array.to_npy_stack()`
+- The module `virtual_dataframe.numpy` is dynamically change to `dask.array`

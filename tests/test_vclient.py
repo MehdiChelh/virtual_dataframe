@@ -141,7 +141,7 @@ def test_dask_with_local_cluster(mockClient, mockLocalCluster):
 
 
 @pytest.mark.skipif(VDF_MODE != Mode.pyspark, reason="Invalid mode")
-@patch('pyspark.sql.session.SparkSession.Builder.config')
+@patch('pyspark.sql.session.SparkSession.Builder.getOrCreate')
 def test_pyspark_implicit_cluster(mockBuilder):
     with vclient._new_VClient(
             mode=Mode.pyspark,
@@ -208,12 +208,12 @@ def test_pyspark_master_env_cluster(mockBuilder):
 
 @pytest.mark.skipif(VDF_MODE != Mode.pyspark, reason="Invalid mode")
 @patch('pyspark.sql.session.SparkSession.Builder.config')
-def test_pyspark_vlocalcluster(mockBuilder):
+@patch('pyspark.sql.session.SparkSession.Builder.getOrCreate')
+def test_pyspark_vlocalcluster(mockBuilder,mockBuilder2):
     with \
             vlocalcluster._new_VLocalCluster(
                 mode=Mode.pyspark,
                 spark_app_name="toto",
-                spark_master="local[*]",
             ) as cluster, \
             vclient._new_VClient(
                 mode=Mode.pyspark,
@@ -221,8 +221,8 @@ def test_pyspark_vlocalcluster(mockBuilder):
                 address=cluster,
             ) as client:
         assert mockBuilder.called
-        master_call = next(filter(lambda c: len(c.args) and c.args[0] == 'spark.master', mockBuilder.mock_calls)).args
-        assert master_call[1] == 'local[*]'
+        assert mockBuilder2.called
+
 
 
 def test_client_with_local_cluster():

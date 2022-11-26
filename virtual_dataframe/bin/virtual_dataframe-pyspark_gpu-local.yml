@@ -10,6 +10,7 @@ dependencies:
 variables:
   VDF_MODE: pyspark
   VDF_CLUSTER: spark://.local
+  spark.rapids.sql.enabled: true
   spark.jars: rapids-4-spark_2.12-22.10.0.jar
   spark.plugins: com.nvidia.spark.SQLPlugin
   spark.rapids.sql.concurrentGpuTasks: 2

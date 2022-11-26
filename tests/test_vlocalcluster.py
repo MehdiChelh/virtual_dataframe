@@ -54,4 +54,4 @@ def test_dask_cudf(mockLocalCUDACluster):
 def test_pyspark():
     local_cluster = vlocalcluster._new_VLocalCluster(mode=Mode.pyspark)
     assert type(local_cluster).__name__ == "SparkLocalCluster"
-    assert local_cluster.conf.get("spark.master") == "local[*]"
+    assert local_cluster.spark_conf.get("spark.master") == "local[*]"

@@ -134,16 +134,34 @@ _params_local_cuda_cluster = _params_local_cluster + [
     "scheduler_sync_interval",
 ]
 
+
+def _read_properties(default_conf: Path) -> Dict[str, str]:
+    with open(default_conf) as f:
+        ln = [line.split("=", 1) for line in f.readlines() if line.strip() and not line.startswith("#")]
+        return {key.strip(): value.strip().strip('"') for key, value in ln if ln}
+
+
+def get_spark_conf() -> Dict[str, str]:
+    conf = {}
+    global_default_conf = Path(os.environ.get("SPARK_HOME", "."), "conf/spark-defaults.conf")
+    if global_default_conf.exists():
+        conf = {**conf, **_read_properties(global_default_conf)}
+
+    default_conf = Path("./spark.conf")
+    if default_conf.exists():
+        conf = {**conf, **_read_properties(default_conf)}
+
+    # Add env. variables
+    conf = {**conf,
+            **dict(
+                map(lambda t: (t[0], t[1]), filter(lambda s: s[0].startswith("spark."), os.environ.items())))}
+    return conf
+
+
 if VDF_MODE == Mode.pyspark:
     from pyspark.sql import SparkSession
 
     DEFAULT_APP_NAME = "virtual_dataframe"
-
-
-    def _read_properties(default_conf: Path) -> Dict[str, str]:
-        with open(default_conf) as f:
-            ln = [line.split("=", 1) for line in f.readlines() if line.strip() and not line.startswith("#")]
-            return {key.strip(): value.strip() for key, value in ln if ln}
 
 
     def get_spark_builder() -> Tuple[SparkSession.Builder, Optional[str]]:
@@ -157,20 +175,7 @@ if VDF_MODE == Mode.pyspark:
 
         And return a builder
         """
-        conf = {}
-        global_default_conf = Path(os.environ.get("SPARK_HOME", "."), "conf/spark-defaults.conf")
-        if global_default_conf.exists():
-            conf = {**conf, **_read_properties(global_default_conf)}
-
-        default_conf = Path("./spark.conf")
-        if default_conf.exists():
-            conf = {**conf, **_read_properties(default_conf)}
-
-        # Add env. variables
-        conf = {**conf,
-                **dict(
-                    map(lambda t: (t[0], t[1]), filter(lambda s: s[0].startswith("spark."), os.environ.items())))}
-
+        conf = get_spark_conf()
         app_name = conf.get("spark.app.name")
         if not app_name:
             app_name = DEFAULT_APP_NAME

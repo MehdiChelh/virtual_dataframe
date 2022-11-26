@@ -44,7 +44,7 @@ def _patch_cupy():
 
 
 
-if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin):
+if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspark):
 
     from functools import update_wrapper
     import numpy
@@ -167,6 +167,25 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin):
     update_wrapper(arange, numpy.arange)
 
 
+    if VDF_MODE in (Mode.pyspark,):
+        import pyspark
+        _old_asarray = numpy.asarray
+        def asarray(
+                a, dtype=None, order=None, **kwargs
+        ):
+            if isinstance(a, (pyspark.pandas.series.DataFrame, pyspark.pandas.series.Series)):
+                return _old_asarray(a.to_numpy(),
+                                    dtype=dtype,
+                                    order=order,
+                                    **kwargs)
+            else:
+                return _old_asarray(a,
+                                    dtype=dtype,
+                                    order=order,
+                                    **kwargs)
+
+
+
     class _Random:
         def __getattr__(self, attr):
             func = getattr(numpy.random, attr)
@@ -218,7 +237,8 @@ elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf):
 
     sys.modules[__name__] = dask.array  # Hack to replace this current module to another
 
-    _patch_cupy()
+    if VDF_MODE in (Mode.dask_cudf):
+        _patch_cupy()
 
     dask.array.asnumpy = lambda df: cupy.asnumpy(df.compute())
     _old_asarray = dask.array.asarray
@@ -239,5 +259,5 @@ elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf):
 
 
     dask.array.asarray = _asarray
-    dask.array.save = dask.array.to_npy_stack
     dask.array.load = dask.array.from_npy_stack
+    dask.array.save = dask.array.to_npy_stack

@@ -10,3 +10,5 @@ dependencies:
 variables:
   VDF_MODE: pyspark
   VDF_CLUSTER: spark://.local
+  spark.rapids.sql.enabled: false
+

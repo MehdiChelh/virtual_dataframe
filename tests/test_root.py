@@ -3,8 +3,22 @@ import pytest
 
 import virtual_dataframe as vdf
 
+@pytest.fixture(scope="session")
+def vclient():
+    local_cluster = vdf.VLocalCluster(
+        scheduler_port=0,
+        device_memory_limit="5g",
+    )
+    client = vdf.VClient(
+        address=local_cluster,
+    )
+    client.__enter__()
+    yield client
+    client.__exit__(None, None, None)
 
-def test_apply_rows():
+
+
+def test_apply_rows(vclient):
     import numpy
 
     df = vdf.VDataFrame(

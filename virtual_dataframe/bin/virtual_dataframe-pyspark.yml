@@ -9,3 +9,4 @@ dependencies:
   - pyspark==3.2.*
 variables:
   VDF_MODE: pyspark
+  spark.rapids.sql.enabled: false

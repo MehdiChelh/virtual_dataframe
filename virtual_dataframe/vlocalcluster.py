@@ -1,5 +1,6 @@
 from typing import Any
 
+from . import vclient
 from .env import VDF_MODE, Mode
 
 params_cuda_local_cluster = [
@@ -41,14 +42,17 @@ class _LocalClusterDummy:
     def __exit__(self, type: None, value: None, traceback: None) -> None:
         pass
 
+
 class SparkLocalCluster:
     def __init__(self, **kwargs):
-        from pyspark.conf import SparkConf
 
-        self.conf = SparkConf()
-        self.conf.set("spark.master", "local[*]")  # Default value
+        conf = vclient.get_spark_conf()
+        conf["spark.master"] = "local[*]"
         for k, v in kwargs.items():
-            self.conf.set(k.replace("_", "."), v)
+            if k.startswith("spark_"):
+                k = k.replace('_', '.')
+                conf[k] = v
+        self.spark_conf = conf
         self.session = None
 
     def __str__(self):
@@ -61,7 +65,7 @@ class SparkLocalCluster:
         if not self.session:
             from pyspark.sql import SparkSession
             builder = SparkSession.builder
-            for k, v in self.conf.getAll():
+            for k, v in self.spark_conf.items():
                 builder.config(k, v)
             self.session = builder.getOrCreate()
             return self

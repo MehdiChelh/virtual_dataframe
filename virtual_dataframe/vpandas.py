@@ -369,7 +369,6 @@ def _patch_cudf(cu_DataFrame, cu_Series, cu_NDArray):
     pandas.Series.to_pandas = lambda self: self
     pandas.Series.to_pandas.__doc__ = _doc_VSeries_to_pandas
 
-
     def _series_to_ndarray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
         import cupy
         return cupy.from_dlpack(self.to_dlpack())
@@ -393,6 +392,7 @@ def _patch_cudf(cu_DataFrame, cu_Series, cu_NDArray):
     cu_Series.repartition.__doc__ = _doc_VSeries_repartition
     cu_Series.visualize = lambda self: visualize(self)
     cu_Series.visualize.__doc__ = _doc_VSeries_visualize
+
 
 if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.cudf, Mode.cupy, Mode.modin, Mode.dask_modin, Mode.pyspark):
 
@@ -504,6 +504,8 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
                 **kwargs
                 ) -> Tuple:
         return tuple(args)
+
+
     compute.__doc__ = _doc_compute
 
     concat = pandas.concat
@@ -512,6 +514,7 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
     delayed.__doc__ = _doc_delayed
 
     persist = _persist  # type: ignore
+
 
     def visualize(*args, **kwargs):
         try:
@@ -582,7 +585,6 @@ if VDF_MODE in (Mode.cudf, Mode.cupy):
             return cudf.read_csv(filepath_or_buffer, **kwargs)
 
 
-
     # noinspection PyUnusedLocal
     def compute(*args,
                 traverse: bool = True,
@@ -602,6 +604,7 @@ if VDF_MODE in (Mode.cudf, Mode.cupy):
     delayed.__doc__ = _doc_delayed
 
     persist = _persist  # type: ignore
+
 
     def visualize(*args, **kwargs):
         try:
@@ -712,6 +715,7 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
             self[col] = data
         return self
 
+
     # noinspection PyUnusedLocal
     def compute(*args,  # noqa: F811
                 traverse: bool = True,
@@ -725,11 +729,11 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
 
     compute.__doc__ = _doc_compute
 
-
     concat: Any = modin.pandas.concat
     delayed: Any = _delayed
     delayed.__doc__ = _doc_delayed
     persist = _persist
+
 
     def visualize(*args, **kwargs):
         try:
@@ -744,7 +748,9 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     visualize.__doc__ = _doc_visualize
 
     from_pandas: Any = lambda data, npartitions=1, chuncksize=None, sort=True, name=None: \
-        modin.pandas.DataFrame(data) if isinstance(data, (pandas.DataFrame, modin.pandas.DataFrame)) else modin.pandas.Series(data)
+        modin.pandas.DataFrame(data) if isinstance(data,
+                                                   (pandas.DataFrame, modin.pandas.DataFrame)) else modin.pandas.Series(
+            data)
     from_pandas.__doc__ = _doc_from_pandas
 
     from_backend: Any = from_pandas
@@ -833,7 +839,7 @@ if VDF_MODE == Mode.dask_cudf:
     BackEnd = cudf
 
     FrontEnd = dask_cudf
-    FrontEndNumpy = cupy
+    FrontEndNumpy = cupy  # PPR: if no cupy?
 
     _VDataFrame: Any = dask_cudf.DataFrame
     _VSeries: Any = dask_cudf.Series
@@ -860,8 +866,10 @@ if VDF_MODE == Mode.dask_cudf:
             path_or_buf = path_or_buf + "/*"
         return FrontEnd.read_json(path_or_buf, **kwargs)
 
+
     def _df_to_ndarray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
         return cupy.from_dlpack(self.compute().to_dlpack())
+
 
     # dask_cudf
     read_csv = FrontEnd.read_csv
@@ -902,7 +910,7 @@ if VDF_MODE == Mode.dask_cudf:
     _patch_cudf(BackEndDataFrame, BackEndSeries, cupy.ndarray)
 
 # %% dask
-if VDF_MODE in (Mode.dask,Mode.dask_array):
+if VDF_MODE in (Mode.dask, Mode.dask_array):
     import pandas
     import numpy
     import dask
@@ -956,7 +964,7 @@ if VDF_MODE in (Mode.dask,Mode.dask_array):
         size = len(self)
         params = {param: self[col].to_numpy() for col, param in incols.items()}
         outputs = {param: numpy.empty(size, dtype) for param, dtype in outcols.items()}
-        func(**params, **outputs,**kwargs,)
+        func(**params, **outputs, **kwargs, )
         for col, data in outputs.items():
             self[col] = data.astype(outcols[col])
         return self
@@ -977,10 +985,12 @@ if VDF_MODE in (Mode.dask,Mode.dask_array):
                                    }
                                    )
 
+
     def _patch_read_json(path_or_buf, **kwargs):
         if os.path.isdir(path_or_buf):
             path_or_buf = path_or_buf + "/*"
         return FrontEnd.read_json(path_or_buf, **kwargs)
+
 
     def _patch_to_sql(f):
         def _to_sql(self, *p, **kwargs):
@@ -989,6 +999,7 @@ if VDF_MODE in (Mode.dask,Mode.dask_array):
             return f(self, *p, **kwargs)
 
         return _to_sql
+
 
     # High level functions
     compute: Any = dask.compute
@@ -1029,7 +1040,6 @@ if VDF_MODE in (Mode.dask,Mode.dask_array):
     _VDataFrame.apply_rows = _apply_rows
     _VDataFrame.apply_rows.__doc__ = _doc_apply_rows
 
-
     _VSeries.to_sql = _patch_to_sql(_VDataFrame.to_sql)
 
     _VSeries.to_pandas = lambda self: self.compute()
@@ -1055,9 +1065,11 @@ if VDF_MODE == Mode.pyspark:
 
     BackEndDataFrame: Any = pandas.DataFrame
     BackEndSeries: Any = pandas.Series
+    BackEndNDArray: Any = numpy.ndarray
     BackEnd = pandas
 
     FrontEnd = pyspark.pandas
+    FrontEndNumpy = numpy
 
     _VDataFrame: Any = FrontEnd.DataFrame
     _VSeries: Any = FrontEnd.Series
@@ -1138,8 +1150,10 @@ if VDF_MODE == Mode.pyspark:
             path_or_buf = path_or_buf + "/*"
         return FrontEnd.read_json(path_or_buf, **kwargs)
 
+
     _original_Series_to_excel = BackEnd.DataFrame.to_excel
     _original_Dataframe_to_excel = BackEnd.DataFrame.to_excel
+
     # Special case for pyspark
 
     def _series_to_excel(
@@ -1169,6 +1183,7 @@ if VDF_MODE == Mode.pyspark:
             _["excel_writer"] = _["excel_writer"].replace("*", "")
         del _["self"]
         return _original_Dataframe_to_excel(self, **_)
+
 
     def _dataframe_to_excel(
             self,
@@ -1200,6 +1215,7 @@ if VDF_MODE == Mode.pyspark:
         del _["self"]
         return _original_Dataframe_to_excel(self, **_)
 
+
     # noinspection PyUnusedLocal
     def compute(*args,  # noqa: F811
                 **kwargs
@@ -1214,6 +1230,7 @@ if VDF_MODE == Mode.pyspark:
     delayed = _delayed
     persist = _persist  # type: ignore
 
+
     def visualize(*args, **kwargs):
         try:
             import IPython
@@ -1222,6 +1239,8 @@ if VDF_MODE == Mode.pyspark:
                                               retina=False)
         except ModuleNotFoundError:
             return True
+
+
     visualize.__doc__ = _doc_visualize
 
     from_pandas: _VDataFrame = _remove_parameters(
@@ -1233,7 +1252,6 @@ if VDF_MODE == Mode.pyspark:
             "name"
         ])
     from_backend: _VDataFrame = from_pandas
-
 
     # pyspark
     read_csv = _patch_read(FrontEnd, "read_csv")
@@ -1252,6 +1270,8 @@ if VDF_MODE == Mode.pyspark:
 
     _VDataFrame.to_backend = _VDataFrame.to_pandas
     _VDataFrame.to_backend.__doc__ = _VDataFrame.to_pandas.__doc__
+    _VDataFrame.to_ndarray = _VDataFrame.to_numpy
+
 
     # Add-on and patch of original dataframes and series
     _VDataFrame.apply_rows = _apply_rows
@@ -1274,6 +1294,7 @@ if VDF_MODE == Mode.pyspark:
 
     _VSeries.to_backend = _VSeries.to_pandas
     _VSeries.to_backend.__doc__ = _VSeries.to_pandas.__doc__
+    _VSeries.to_ndarray = _VSeries.to_numpy
 
     _VSeries.compute = lambda self, **kwargs: self
     _VSeries.compute.__doc__ = _doc_VDataFrame_compute
@@ -1286,12 +1307,9 @@ if VDF_MODE == Mode.pyspark:
     _VSeries.visualize = lambda self: visualize(self)
     _VSeries.visualize.__doc__ = _doc_VDataFrame_visualize
 
-
-    _patch_pandas(BackEndDataFrame, BackEndSeries)
-
+    _patch_pandas(BackEndDataFrame, BackEndSeries, numpy.ndarray)
 
     BackEnd.Series.to_excel = _series_to_excel
-
 
     BackEnd.DataFrame.to_excel = _dataframe_to_excel
 

@@ -10,6 +10,18 @@ import virtual_dataframe as vdf
 import virtual_dataframe.numpy as vnp
 from virtual_dataframe import Mode, VDF_MODE
 
+@pytest.fixture(scope="session")
+def vclient():
+    local_cluster = vdf.VLocalCluster(
+        scheduler_port=0,
+        device_memory_limit="5g",
+    )
+    client = vdf.VClient(
+        address=local_cluster,
+    )
+    client.__enter__()
+    yield client
+    client.__exit__(None, None, None)
 
 def test_array():
     assert numpy.array_equal(
@@ -76,7 +88,7 @@ def test_asarray():
         ))
 
 
-def test_DataFrame_ctr():
+def test_DataFrame_ctr(vclient):
     a = vnp.array([
         [0.0, 1.0, 2.0, 3.0],
         [1, 2, 3, 4],
@@ -90,7 +102,7 @@ def test_DataFrame_ctr():
             2: [10.0, 20.0, 30.0, 40.0]
         }
     )
-    assert vdf.compute((df1 == df2).all().all())
+    assert (df1.to_pandas() == df2.to_pandas()).all().all()
 
 
 def test_ctr_serie():
