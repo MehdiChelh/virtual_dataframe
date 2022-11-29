@@ -256,7 +256,6 @@
 - Add `vdf.FrontEnd = pyspark.pandas`
 - Add `vdf.FrontEndNumpy = numpy`
 
-- Call `pyspark.pandas.set_option('compute.ops_on_diff_frames',True)`
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
 - Add `vdf.concat()` an alias of `pyspark.pandas.concat()`
 - Add `vdf.delayed()` to delay a call and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)

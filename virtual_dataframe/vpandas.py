@@ -548,7 +548,6 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
     _patch_pandas(_VDataFrame, _VSeries, BackEndNDArray)
 
     numpy = FrontEndNumpy
-    # FIXME numpy.asnumpy = lambda d: d
 
 # %% cudf
 if VDF_MODE in (Mode.cudf, Mode.cupy):
@@ -762,9 +761,9 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     read_feather = _patch_read(FrontEnd, "read_feather", "dask and dask_cudf")
     read_fwf = _patch_read(FrontEnd, "read_fwf", "cudf and dask_cudf")
     read_hdf = _patch_read(FrontEnd, "read_hdf", "dask_cudf")
-    read_json = FrontEnd.read_json  # FIXME check glob
+    read_json = FrontEnd.read_json
     read_orc = _patch_read(FrontEnd, "read_orc")
-    read_parquet = FrontEnd.read_parquet  # FIXME check glob
+    read_parquet = FrontEnd.read_parquet
     read_sql_table = _warn(FrontEnd.read_sql_table, "cudf and dask_cudf")
 
     # Add-on and patch of original dataframes and series
@@ -773,7 +772,7 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     _VDataFrame.to_excel = _patch_to(_VDataFrame.to_excel, [], "cudf, dask and dask_cudf")
     _VDataFrame.to_feather = _patch_to(_VDataFrame.to_feather, [], "dask and dask_cudf")
     _VDataFrame.to_hdf = _patch_to(_VDataFrame.to_hdf, [], "dask_cudf")
-    _VDataFrame.to_sql = _warn(_VDataFrame.to_sql, "cudf and dask_cudf")  # FIXME: to_sql or to_sql_table ?
+    _VDataFrame.to_sql = _warn(_VDataFrame.to_sql, "cudf and dask_cudf")
 
     _VDataFrame.to_pandas = _VDataFrame._to_pandas
     _VDataFrame.to_backend = lambda self: self
@@ -795,7 +794,7 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     _VDataFrame.visualize = lambda self: visualize(self)
     _VDataFrame.visualize.__doc__ = _doc_VDataFrame_visualize
 
-    _VSeries.to_pandas = modin.pandas.Series._to_pandas  # FIXME
+    _VSeries.to_pandas = modin.pandas.Series._to_pandas
     _VSeries.to_pandas.__doc__ = _doc_VSeries_to_pandas
     _VSeries.to_backend = lambda self: self
     _VSeries.to_backend.__doc__ = _doc_VSeries_to_pandas
@@ -839,7 +838,7 @@ if VDF_MODE == Mode.dask_cudf:
     BackEnd = cudf
 
     FrontEnd = dask_cudf
-    FrontEndNumpy = cupy  # PPR: if no cupy?
+    FrontEndNumpy = cupy  # PPR: if no cupy in driver?
 
     _VDataFrame: Any = dask_cudf.DataFrame
     _VSeries: Any = dask_cudf.Series
@@ -847,7 +846,7 @@ if VDF_MODE == Mode.dask_cudf:
 
     # High level functions
     compute: Any = dask.compute
-    concat: _VDataFrame = dask.dataframe.multi.concat  # FIXME: tester
+    concat: _VDataFrame = dask.dataframe.multi.concat
     delayed: Any = dask.delayed
     persist: Iterable[_VDataFrame] = dask.persist
     visualize: Any = dask.visualize
@@ -891,20 +890,20 @@ if VDF_MODE == Mode.dask_cudf:
     # Add-on and patch of original dataframes and series
     _VDataFrame.to_pandas = lambda self: self.compute().to_pandas()
     _VDataFrame.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
-    _VDataFrame.to_backend = lambda self: self.compute()  # FIXME: TU
+    _VDataFrame.to_backend = lambda self: self.compute()
     _VDataFrame.to_backend.__doc__ = _doc_VDataFrame_to_pandas
     _VDataFrame.to_numpy = lambda self: self.compute().to_numpy()
     _VDataFrame.to_numpy.__doc__ = _doc_VDataFrame_to_numpy
-    _VDataFrame.to_ndarray = _df_to_ndarray  # FIXME: TU
+    _VDataFrame.to_ndarray = _df_to_ndarray
     _VDataFrame.to_ndarray.__doc__ = _doc_VDataFrame_to_numpy
 
     _VSeries.to_pandas = lambda self: self.compute().to_pandas()
     _VSeries.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
-    _VSeries.to_backend = lambda self: self.compute()  # FIXME: TU cudf.Series ?
+    _VSeries.to_backend = lambda self: self.compute()
     _VSeries.to_backend.__doc__ = _doc_VDataFrame_to_pandas
     _VSeries.to_numpy = lambda self: self.compute().to_numpy()
     _VSeries.to_numpy.__doc__ = _doc_VSeries_to_numpy
-    _VSeries.to_ndarray = _df_to_ndarray  # FIXME: TU cupy.ndarray ?
+    _VSeries.to_ndarray = _df_to_ndarray
     _VSeries.to_ndarray.__doc__ = _doc_VSeries_to_numpy
 
     _patch_cudf(BackEndDataFrame, BackEndSeries, cupy.ndarray)
@@ -1142,7 +1141,7 @@ if VDF_MODE == Mode.pyspark:
 
 
     def _persist(*collections, traverse=True, optimize_graph=True, scheduler=None, **kwargs):
-        return collections  # TODO: cache ?
+        return collections
 
 
     def _patch_read_json(path_or_buf, **kwargs):

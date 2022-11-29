@@ -4,10 +4,13 @@
 
 ## Motivation
 
-With Panda-like dataframe or numby-like, do you want to create a code, and choose at the end, the framework to use?
-Do you want to be able to choose the best framework after simply performing performance measurements?
+With Panda-like dataframe or numby-like array, do you want to create a code, and choose at the end, the framework
+to use?  Do you want to be able to choose the best framework after simply performing performance measurements?
 This framework unifies multiple Panda-compatible or Numpy-comptaible components,
 to allow the writing of a single code, compatible with all.
+
+Do you want to use different architectures at different times of the year to be "green" and cheaper?
+Do you want to use a GPU only for the black-friday?
 
 ## Synopsis
 
@@ -43,4 +46,5 @@ Then, it is possible to write one code, and use it in differents environnements 
 
 This project is essentially a back-port of *Dask+Cudf* to others frameworks.
 We try to normalize the API of all frameworks.
+This project will *weave* your code with the selected framework, at runtime.
 
