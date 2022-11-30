@@ -59,7 +59,10 @@
 | VSeries.to_ndarray()                   | Convert to numpy backend (numpy, cupy or dask.array)                                |
 | VClient(...)                           | The connexion with the cluster                                                      |
 | import vdf.numpy                       | Import numpy, cupy or dask.array                                                    |
-| vdf.numpy.array(..., chunks=...)       | Create a numpy-like array                                                           |
+| vdf.numpy.array(..., chunks=...)       | Create an numpy-like array                                                          |
+| vdf.numpy.arange(...)                  | Return evenly spaced values within a given interval.                                |
+| vdf.numpy.zeros(...)                   | Return a new array of given shape and type, filled with zeros.                      |
+| vdf.numpy.zeros_like(...)              | Return an array of zeros with the same shape and type as a given array.                      |
 | vdf.numpy.asnumpy(d)                   | Convert to `numpy.ndarray`                                                          |
 | vdf.numpy.save(d)                      | Save to npy format                                                                  |
 | vdf.numpy.load(d)                      | Load npy format                                                                     |

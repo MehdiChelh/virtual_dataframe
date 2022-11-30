@@ -1,10 +1,21 @@
-from typing import Tuple
+from typing import Tuple, List
 
 import dask_cudf.core
 
 from virtual_dataframe import VDF_MODE, Mode
 import sys
 from functools import wraps
+
+
+def _remove_parameters(func, _params: List[str]):
+    import numpy
+    def wrapper(*args, **kwargs):
+        for k in _params:
+            kwargs.pop(k, None)
+        rc = func(*args, **kwargs)
+        return rc.view(Vndarray) if isinstance(rc, numpy.ndarray) else rc
+
+    return wrapper
 
 
 def _patch_cupy():
@@ -29,38 +40,44 @@ def _patch_cupy():
 
     cupy.random = _Random(cupy.random)
 
-    def _wrapper(func):
-        @wraps(func)
-        def _wrapped(*args, **kwargs):
-            kwargs.pop("chunks", None)
-            return func(*args, **kwargs)
-
-        return _wrapped
-
-    cupy.arange = _wrapper(cupy.arange)
-    cupy.from_array = _wrapper(cupy.array)
-    cupy.compute = lambda *args,**kwargs: tuple(args)
-
-
+    cupy.arange = _remove_parameters(cupy.arange, ["chunks"])
+    cupy.from_array = _remove_parameters(cupy.array, ["chunks"])
+    cupy.compute = lambda *args, **kwargs: tuple(args)
 
 
 if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspark):
 
     from functools import update_wrapper
-    import numpy
-    from inspect import getmembers
     import sys
+    import numpy
+    import inspect
 
     FrontEndNumpy = numpy
 
-    # Inject all numpy api here
+
+    def _wrapper(func):
+        @wraps(func)
+        def _wrapped(*args, **kwargs):
+            rc = func(*args, **kwargs)
+            return rc.view(Vndarray) if isinstance(rc, numpy.ndarray) else rc
+
+        return _wrapped
+
+
+    # Inject all numpy api here and add a view if possible
     _module = sys.modules[__name__]  # Me
-    for k, v in getmembers(numpy, None):
-        setattr(_module, k, getattr(numpy, k))
+    for k, v in inspect.getmembers(numpy, None):
+        attr = getattr(numpy, k)
+        if inspect.isfunction(attr) or inspect.isbuiltin(attr):
+            _wrap = _wrapper(attr)
+            update_wrapper(_wrap, attr)
+            setattr(_module, k, _wrap)
+        else:
+            setattr(_module, k, attr)
 
 
     # Wrapper to inject some methods
-    class Vnarray(numpy.ndarray):
+    class Vndarray(numpy.ndarray):
 
         def compute(self):
             return self
@@ -79,13 +96,13 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
                     order=None):
             obj = super().__new__(subtype, shape, dtype,
                                   buffer, offset, strides, order)
-            # return Vnarray._add_methods(obj)
+            # return Vndarray._add_methods(obj)
             return obj
 
         def __array_finalize__(self, obj):
             if obj is None:
                 return
-            # Vnarray._add_methods(self)
+            # Vndarray._add_methods(self)
 
         def __array_ufunc__(self, ufunc, method, *inputs, out=None, **kwargs):
             # - *ufunc* is the ufunc object that was called.
@@ -100,7 +117,7 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
             args = []
             in_no = []
             for i, input_ in enumerate(inputs):
-                if isinstance(input_, Vnarray):
+                if isinstance(input_, Vndarray):
                     in_no.append(i)
                     args.append(input_.view(numpy.ndarray))
                 else:
@@ -111,7 +128,7 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
             if outputs:
                 out_args = []
                 for j, output in enumerate(outputs):
-                    if isinstance(output, Vnarray):
+                    if isinstance(output, Vndarray):
                         out_no.append(j)
                         out_args.append(output.view(numpy.ndarray))
                     else:
@@ -130,46 +147,46 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
                 return NotImplemented
 
             if method == 'at':
-                # if isinstance(inputs[0], Vnarray):
+                # if isinstance(inputs[0], Vndarray):
                 # inputs[0].info = info
                 return
 
             if ufunc.nout == 1:
                 results = (results,)
 
-            results = tuple((numpy.asarray(result).view(Vnarray)
+            results = tuple((numpy.asarray(result).view(Vndarray)
                              if output is None else output)
                             for result, output in zip(results, outputs))
-            # if results and isinstance(results[0], Vnarray):
-            #     Vnarray._add_methods(results[0])
+            # if results and isinstance(results[0], Vndarray):
+            #     Vndarray._add_methods(results[0])
 
             return results[0] if len(results) == 1 else results
 
 
-    def array(*args, **kwds):
-        return numpy.array(*args, **kwds).view(Vnarray)
-
-
     def arange(start=None, *args, **kwargs):
         kwargs.pop("chunks", None)
-        return numpy.arange(start, *args, **kwargs).view(Vnarray)
+        return numpy.arange(start, *args, **kwargs).view(Vndarray)
+
+
+    update_wrapper(arange, numpy.arange)
 
 
     def asnumpy(d):
         return d
+
 
     def compute(*args,  # noqa: F811
                 **kwargs
                 ) -> Tuple:
         return tuple(args)
 
-    update_wrapper(array, numpy.array)
-    update_wrapper(arange, numpy.arange)
-
 
     if VDF_MODE in (Mode.pyspark,):
         import pyspark
+
         _old_asarray = numpy.asarray
+
+
         def asarray(
                 a, dtype=None, order=None, **kwargs
         ):
@@ -185,7 +202,6 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
                                     **kwargs)
 
 
-
     class _Random:
         def __getattr__(self, attr):
             func = getattr(numpy.random, attr)
@@ -195,7 +211,7 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
                 kwargs.pop("chunks", None)
                 rc = func(*args, **kwargs)
                 if isinstance(rc, numpy.ndarray):
-                    rc = rc.view(Vnarray)
+                    rc = rc.view(Vndarray)
                 return rc
 
             return _wrapped
@@ -203,23 +219,10 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
 
     random = _Random()
 
-
-    def _wrapper(func):
-        @wraps(func)
-        def _wrapped(*args, **kwargs):
-            kwargs.pop("chunks", None)
-            rc = func(*args, **kwargs)
-            if isinstance(rc, numpy.ndarray):
-                rc = rc.view(Vnarray)
-            return rc
-
-        return _wrapped
-
-
-    from_array = _wrapper(numpy.array)
-    load = _wrapper(numpy.load)
-    save = _wrapper(numpy.save)
-    savez = _wrapper(numpy.savez)
+    from_array = _remove_parameters(numpy.array, ["chunks"])
+    load = _remove_parameters(numpy.load, ["chunks"])
+    save = _remove_parameters(numpy.save, ["chunks"])
+    savez = _remove_parameters(numpy.savez, ["chunks"])
 
 elif VDF_MODE in (Mode.cudf, Mode.cupy):
 
@@ -237,7 +240,7 @@ elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf):
 
     sys.modules[__name__] = dask.array  # Hack to replace this current module to another
 
-    if VDF_MODE in (Mode.dask_cudf):
+    if VDF_MODE in (Mode.dask_cudf,):
         _patch_cupy()
 
     dask.array.asnumpy = lambda df: cupy.asnumpy(df.compute())
@@ -259,5 +262,6 @@ elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf):
 
 
     dask.array.asarray = _asarray
-    dask.array.load = dask.array.from_npy_stack
-    dask.array.save = dask.array.to_npy_stack
+
+    dask.array.load = _remove_parameters(dask.array.from_npy_stack, ["chunks", "allow_pickle"])
+    dask.array.save = _remove_parameters(dask.array.to_npy_stack, ["chunks", "allow_pickle"])

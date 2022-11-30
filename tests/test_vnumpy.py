@@ -116,6 +116,9 @@ def test_ctr():
         numpy.array([1, 2])), "can not call compute()"
 
 
+def test_empty():
+    vnp.empty((3, 4)).compute()
+
 def test_slicing():
     assert vnp.array([1, 2])[1:].compute(), "can not call compute()"
 
@@ -176,7 +179,7 @@ def test_savez_and_load_npz():
         filename = f"{d}/test.npz"
         d1 = vnp.arange(1_000).reshape(10, 100)
         vnp.savez(filename, arr=d1, allow_pickle=False)
-        npz = vnp.load(filename, mmap_mode=False, allow_pickle=False)
+        npz = vnp.load(filename, mmap_mode=False)
         d2 = npz["arr"]
         assert vnp.compute((d1 == d2).all())
     finally:

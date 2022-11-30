@@ -307,16 +307,16 @@ a sub-class of `ndarray` and the differents protocoles describe
 [here](https://numpy.org/doc/stable/user/basics.subclassing.html).
 
 - The `virtual_dataframe.numpy` import all module members of `numpy`
-- A `Vnarray` subclassing `numpy.narray`
-- Add `Vnarray.compute()` to return `self`
-- Add `Vnarray.compute_chunk_sizes()` to return `self`
-- Add `Vnarray.rechunk()` to return `self`
-- A `nparray.view(Vnarray)` is called when necessary
-- Add `vdf.numpy.array()` invoke `numpy.array()` and return a view with `Vnarray`
-- Add `vdf.numpy.arange()`, remove the parameter `chunks`, invoke `numpy.arange()` and return a view with `Vnarray`
+- A `Vndarray` subclassing `numpy.narray`
+- Add `Vndarray.compute()` to return `self`
+- Add `Vndarray.compute_chunk_sizes()` to return `self`
+- Add `Vndarray.rechunk()` to return `self`
+- A `nparray.view(Vndarray)` is called when necessary
+- Add `vdf.numpy.array()` invoke `numpy.array()` and return a view with `Vndarray`
+- Add `vdf.numpy.arange()`, remove the parameter `chunks`, invoke `numpy.arange()` and return a view with `Vndarray`
 - Add `vdf.numpy.asnumpy()` to return df
 - Add `vdf.numpy.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
-- Add `vdf.numpy.random.*` with a wrapper to add a view of `Vnarray` for each *random* method
+- Add `vdf.numpy.random.*` with a wrapper to add a view of `Vndarray` for each *random* method
 - Add `vdf.numpy.from_array()` to return `numpy.array()`
 - Add `vdf.numpy.load()` to return `numpy.load()`
 - Add `vdf.numpy.save()` to return `numpy.save()`

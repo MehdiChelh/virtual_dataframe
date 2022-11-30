@@ -27,14 +27,36 @@ This project is just a wrapper. So, it inherits limitations and bugs from other 
 | [Read this](https://spark.apache.org/docs/latest/api/python/reference/pyspark.pandas/index.html) |
 
 
-| Limitations of Numpy like framework                                       |
-|---------------------------------------------------------------------------|
-| <br/>**numpy**</br/>                                                      |
-| All data must be in RAM                                                   |
-| <br/>**cupy**</br/>                                                       |
-| [Read this](https://docs.cupy.dev/en/stable/user_guide/difference.html)   |
-| <br/>**dask array**</br/>                                                 |
-| [Read this](https://docs.dask.org/en/stable/array.html#scope)             |
+| Limitations of Numpy like framework                                     |
+|-------------------------------------------------------------------------|
+| <br/>**numpy**</br/>                                                    |
+| All data must be in RAM                                                 |
+| <br/>**cupy**</br/>                                                     |
+| [Read this](https://docs.cupy.dev/en/stable/user_guide/difference.html) |
+| - block() not implemented                                               |
+| - delete() not implemented                                              |
+| - insert() not implemented                                              |
+| <br/>**dask array**</br/>                                               |
+| [Read this](https://docs.dask.org/en/stable/array.html#scope)           |
+| - identity() not implemented                                            |
+| - asfarray() not implemented                                            |
+| - asfortranarray() not implemented                                      |
+| - ascontiguousarray() not implemented                                   |
+| - asarray_chkfinite() not implemented                                   |
+| - require() not implemented                                             |
+| - column_stack() not implemented                                        |
+| - row_stack() not implemented                                           |
+| - \*split\*() not implemented                                           |
+| - resize() not implemented                                              |
+| - trim_zeros() not implemented                                          |
+| - in1d() not implemented                                                |
+| - intersect1d() not implemented                                         |
+| - setdiff1d() not implemented                                           |
+| - setxor1d() not implemented                                            |
+| - column_stack() not implemented                                        |
+| - row_stack() not implemented                                           |
+| - fromiter() not implemented                                           |
+
 
 For compatibility between numpy and cupy,
 see [here](https://numpy.org/doc/stable/user/basics.interoperability.html#basics-interoperability).
