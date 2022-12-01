@@ -142,7 +142,7 @@ if VDF_MODE in (Mode.pandas, Mode.numpy, Mode.modin, Mode.dask_modin, Mode.pyspa
             #     info['inputs'] = in_no
             # if out_no:
             #     info['outputs'] = out_no
-            results = super().__array_ufunc__(ufunc, method, *args, **kwargs)
+            results = super().__array_ufunc__(ufunc, method, *args, **kwargs)  # type: ignore
             if results is NotImplemented:
                 return NotImplemented
 
@@ -232,7 +232,7 @@ elif VDF_MODE in (Mode.cudf, Mode.cupy):
 
     _patch_cupy()
 
-elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf):
+elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy):
 
     import dask.array
     import numpy
@@ -240,7 +240,7 @@ elif VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf):
 
     sys.modules[__name__] = dask.array  # Hack to replace this current module to another
 
-    if VDF_MODE in (Mode.dask_cudf,):
+    if VDF_MODE in (Mode.dask_cudf, Mode.dask_cupy):
         _patch_cupy()
 
     dask.array.asnumpy = lambda df: cupy.asnumpy(df.compute())

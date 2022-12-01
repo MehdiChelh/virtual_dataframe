@@ -35,6 +35,7 @@ class Mode(Enum):
     dask_modin = "dask_modin"
     # ray_modin = "ray_modin"
     dask_cudf = "dask_cudf"
+    dask_cupy = "dask_cupy"  # Alias of dask_cupy
 
 
 def _check_cuda() -> bool:

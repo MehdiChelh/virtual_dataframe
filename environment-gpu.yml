@@ -6,3 +6,5 @@ dependencies:
   - cudf==22.10.*
   - dask-cuda==22.10.*
   - dask-cudf==22.10.*
+  - pip:
+      - nvidia-ml-py3

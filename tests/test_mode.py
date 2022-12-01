@@ -121,7 +121,7 @@ def test_DataFrame_MODE_cudf():
         assert isinstance(rc, cudf.DataFrame)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE != vdf.Mode.dask_cudf, reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE not in (vdf.Mode.dask_cudf, vdf.Mode.dask_cupy), reason="Incompatible mode")
 def test_DataFrame_MODE_dask_cudf():
     if not USE_GPU:
         pytest.skip("GPU Not found")

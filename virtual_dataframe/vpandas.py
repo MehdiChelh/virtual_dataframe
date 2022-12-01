@@ -433,14 +433,14 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
 
     BackEndDataFrame: Any = pandas.DataFrame
     BackEndSeries: Any = pandas.Series
-    BackEndNDArray: Any = numpy.ndarray
-    BackEnd = pandas
+    BackEndNumpy: Any = numpy.ndarray
+    BackEndPandas = pandas
 
-    FrontEnd = pandas
+    FrontEndPandas = pandas
     FrontEndNumpy = numpy
 
-    _VDataFrame: Any = FrontEnd.DataFrame
-    _VSeries: Any = FrontEnd.Series
+    _VDataFrame: Any = FrontEndPandas.DataFrame
+    _VSeries: Any = FrontEndPandas.Series
 
 
     # noinspection PyUnusedLocal
@@ -535,17 +535,17 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
     from_backend.__doc__ = _doc_from_backend
 
     # pandas
-    read_csv = _patch_read(FrontEnd, "read_csv")
-    read_excel = _patch_read(FrontEnd, "read_excel", "cudf, dask or dask_cudf")
-    read_feather = _patch_read(FrontEnd, "read_feather", "dask and dask_cudf")
-    read_fwf = _patch_read(FrontEnd, "read_fwf", "cudf and dask_cudf")
-    read_hdf = _patch_read(FrontEnd, "read_hdf", "dask_cudf")
-    read_json = _patch_read(FrontEnd, "read_json")
-    read_orc = FrontEnd.read_orc
-    read_parquet = FrontEnd.read_parquet
-    read_sql_table = _warn(FrontEnd.read_sql_table, "cudf and dask_cudf")
+    read_csv = _patch_read(FrontEndPandas, "read_csv")
+    read_excel = _patch_read(FrontEndPandas, "read_excel", "cudf, dask or dask_cudf")
+    read_feather = _patch_read(FrontEndPandas, "read_feather", "dask and dask_cudf")
+    read_fwf = _patch_read(FrontEndPandas, "read_fwf", "cudf and dask_cudf")
+    read_hdf = _patch_read(FrontEndPandas, "read_hdf", "dask_cudf")
+    read_json = _patch_read(FrontEndPandas, "read_json")
+    read_orc = FrontEndPandas.read_orc
+    read_parquet = FrontEndPandas.read_parquet
+    read_sql_table = _warn(FrontEndPandas.read_sql_table, "cudf and dask_cudf")
 
-    _patch_pandas(_VDataFrame, _VSeries, BackEndNDArray)
+    _patch_pandas(_VDataFrame, _VSeries, BackEndNumpy)
 
     numpy = FrontEndNumpy
 
@@ -557,10 +557,10 @@ if VDF_MODE in (Mode.cudf, Mode.cupy):
 
     BackEndDataFrame: Any = cudf.DataFrame
     BackEndSeries: Any = cudf.Series
-    BackEndNDArray: Any = cupy.ndarray
-    BackEnd = cudf
+    BackEndNumpy: Any = cupy.ndarray
+    BackEndPandas = cudf
 
-    FrontEnd = cudf
+    FrontEndPandas = cudf
     FrontEndNumpy = cupy
 
     _VDataFrame: Any = BackEndDataFrame
@@ -626,14 +626,14 @@ if VDF_MODE in (Mode.cudf, Mode.cupy):
     from_backend.__doc__ = _doc_from_backend
 
     # cudf
-    read_csv = _patch_read(FrontEnd, "read_csv")
+    read_csv = _patch_read(FrontEndPandas, "read_csv")
     read_excel = _not_implemented
-    read_feather = _patch_read(FrontEnd, "read_feather", "dask and dask_cudf")
+    read_feather = _patch_read(FrontEndPandas, "read_feather", "dask and dask_cudf")
     read_fwf = _not_implemented
-    read_hdf = _patch_read(FrontEnd, "read_hdf", "dask_cudf")
-    read_json = _patch_read(FrontEnd, "read_json")
-    read_orc = FrontEnd.read_orc
-    read_parquet = FrontEnd.read_parquet
+    read_hdf = _patch_read(FrontEndPandas, "read_hdf", "dask_cudf")
+    read_json = _patch_read(FrontEndPandas, "read_json")
+    read_orc = FrontEndPandas.read_orc
+    read_parquet = FrontEndPandas.read_parquet
     read_sql_table = _not_implemented
 
     _patch_cudf(_VDataFrame, _VSeries, cupy.ndarray)
@@ -654,10 +654,10 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
 
     BackEndDataFrame: Any = modin.pandas.DataFrame
     BackEndSeries: Any = modin.pandas.Series
-    BackEndNDArray: Any = numpy.ndarray
-    BackEnd = modin.pandas
+    BackEndNumpy: Any = numpy.ndarray
+    BackEndPandas = modin.pandas
 
-    FrontEnd = modin.pandas
+    FrontEndPandas = modin.pandas
     FrontEndNumpy = numpy
 
     _VDataFrame: Any = BackEndDataFrame
@@ -756,15 +756,15 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     from_backend.__doc__ = _doc_from_backend
 
     # modin
-    read_csv = FrontEnd.read_csv
-    read_excel = _patch_read(FrontEnd, "read_excel", "cudf, dask and dask_cudf")
-    read_feather = _patch_read(FrontEnd, "read_feather", "dask and dask_cudf")
-    read_fwf = _patch_read(FrontEnd, "read_fwf", "cudf and dask_cudf")
-    read_hdf = _patch_read(FrontEnd, "read_hdf", "dask_cudf")
-    read_json = FrontEnd.read_json
-    read_orc = _patch_read(FrontEnd, "read_orc")
-    read_parquet = FrontEnd.read_parquet
-    read_sql_table = _warn(FrontEnd.read_sql_table, "cudf and dask_cudf")
+    read_csv = FrontEndPandas.read_csv
+    read_excel = _patch_read(FrontEndPandas, "read_excel", "cudf, dask and dask_cudf")
+    read_feather = _patch_read(FrontEndPandas, "read_feather", "dask and dask_cudf")
+    read_fwf = _patch_read(FrontEndPandas, "read_fwf", "cudf and dask_cudf")
+    read_hdf = _patch_read(FrontEndPandas, "read_hdf", "dask_cudf")
+    read_json = FrontEndPandas.read_json
+    read_orc = _patch_read(FrontEndPandas, "read_orc")
+    read_parquet = FrontEndPandas.read_parquet
+    read_sql_table = _warn(FrontEndPandas.read_sql_table, "cudf and dask_cudf")
 
     # Add-on and patch of original dataframes and series
     _VDataFrame.to_orc = _not_implemented
@@ -818,7 +818,7 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     _VSeries.visualize.__doc__ = _doc_VSeries_visualize
 
 # %% dask_cudf
-if VDF_MODE == Mode.dask_cudf:
+if VDF_MODE in (Mode.dask_cudf, Mode.dask_cupy):
     import pandas
     import dask
     import dask.dataframe
@@ -834,10 +834,10 @@ if VDF_MODE == Mode.dask_cudf:
 
     BackEndDataFrame: Any = cudf.DataFrame
     BackEndSeries: Any = cudf.Series
-    BackEndNDArray: Any = cupy.ndarray
-    BackEnd = cudf
+    BackEndNumpy: Any = cupy.ndarray
+    BackEndPandas = cudf
 
-    FrontEnd = dask_cudf
+    FrontEndPandas = dask_cudf
     FrontEndNumpy = cupy  # PPR: if no cupy in driver?
 
     _VDataFrame: Any = dask_cudf.DataFrame
@@ -863,7 +863,7 @@ if VDF_MODE == Mode.dask_cudf:
     def _patch_read_json(path_or_buf, **kwargs):
         if os.path.isdir(path_or_buf):
             path_or_buf = path_or_buf + "/*"
-        return FrontEnd.read_json(path_or_buf, **kwargs)
+        return FrontEndPandas.read_json(path_or_buf, **kwargs)
 
 
     def _df_to_ndarray(self, dtype: Union[Dtype, None] = None, copy: bool = True, na_value=None):
@@ -871,14 +871,14 @@ if VDF_MODE == Mode.dask_cudf:
 
 
     # dask_cudf
-    read_csv = FrontEnd.read_csv
+    read_csv = FrontEndPandas.read_csv
     read_excel = _not_implemented
     read_feather = _not_implemented
     read_fwf = _not_implemented
     read_hdf = _not_implemented
     read_json = _patch_read_json
-    read_orc = FrontEnd.read_orc
-    read_parquet = FrontEnd.read_parquet
+    read_orc = FrontEndPandas.read_orc
+    read_parquet = FrontEndPandas.read_parquet
     read_sql_table = _not_implemented
 
     _VDataFrame.to_excel = _not_implemented
@@ -917,15 +917,15 @@ if VDF_MODE in (Mode.dask, Mode.dask_array):
 
     BackEndDataFrame: Any = pandas.DataFrame
     BackEndSeries: Any = pandas.Series
-    BackEndNDArray: Any = numpy.ndarray
-    BackEnd = pandas
+    BackEndNumpy: Any = numpy.ndarray
+    BackEndPandas = pandas
 
-    FrontEnd = dask.dataframe
+    FrontEndPandas = dask.dataframe
     FrontEndNumpy = dask.array
 
-    _VDataFrame: Any = FrontEnd.DataFrame
-    _VSeries: Any = FrontEnd.Series
-    _from_back: Any = FrontEnd.from_pandas
+    _VDataFrame: Any = FrontEndPandas.DataFrame
+    _VSeries: Any = FrontEndPandas.Series
+    _from_back: Any = FrontEndPandas.from_pandas
     _cache = dict()  # type: Dict[Any, Any]
 
 
@@ -988,7 +988,7 @@ if VDF_MODE in (Mode.dask, Mode.dask_array):
     def _patch_read_json(path_or_buf, **kwargs):
         if os.path.isdir(path_or_buf):
             path_or_buf = path_or_buf + "/*"
-        return FrontEnd.read_json(path_or_buf, **kwargs)
+        return FrontEndPandas.read_json(path_or_buf, **kwargs)
 
 
     def _patch_to_sql(f):
@@ -1002,24 +1002,24 @@ if VDF_MODE in (Mode.dask, Mode.dask_array):
 
     # High level functions
     compute: Any = dask.compute
-    concat: _VDataFrame = FrontEnd.multi.concat
+    concat: _VDataFrame = FrontEndPandas.multi.concat
     delayed: Any = dask.delayed
     persist: Iterable[_VDataFrame] = dask.persist
     visualize: Any = dask.visualize
 
-    from_pandas: _VDataFrame = FrontEnd.from_pandas
+    from_pandas: _VDataFrame = FrontEndPandas.from_pandas
     from_backend: _VDataFrame = from_pandas
 
     # dask
-    read_csv = FrontEnd.read_csv
+    read_csv = FrontEndPandas.read_csv
     read_excel = _not_implemented
     read_feather = _not_implemented
-    read_fwf = _warn(FrontEnd.read_fwf, "cudf and dask_cudf")
-    read_hdf = _warn(FrontEnd.read_hdf, "dask_cudf")
+    read_fwf = _warn(FrontEndPandas.read_fwf, "cudf and dask_cudf")
+    read_hdf = _warn(FrontEndPandas.read_hdf, "dask_cudf")
     read_json = _patch_read_json
-    read_orc = FrontEnd.read_orc
-    read_parquet = FrontEnd.read_parquet
-    read_sql_table = _warn(FrontEnd.read_sql_table, "dask_cudf")
+    read_orc = FrontEndPandas.read_orc
+    read_parquet = FrontEndPandas.read_parquet
+    read_sql_table = _warn(FrontEndPandas.read_sql_table, "dask_cudf")
 
     _VDataFrame.to_pandas = lambda self: self.compute()
     _VDataFrame.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
@@ -1064,16 +1064,16 @@ if VDF_MODE == Mode.pyspark:
 
     BackEndDataFrame: Any = pandas.DataFrame
     BackEndSeries: Any = pandas.Series
-    BackEndNDArray: Any = numpy.ndarray
-    BackEnd = pandas
+    BackEndNumpy: Any = numpy.ndarray
+    BackEndPandas = pandas
 
-    FrontEnd = pyspark.pandas
+    FrontEndPandas = pyspark.pandas
     FrontEndNumpy = numpy
 
-    _VDataFrame: Any = FrontEnd.DataFrame
-    _VSeries: Any = FrontEnd.Series
+    _VDataFrame: Any = FrontEndPandas.DataFrame
+    _VSeries: Any = FrontEndPandas.Series
     _from_back: Any = _remove_parameters(
-        FrontEnd.from_pandas,
+        FrontEndPandas.from_pandas,
         [
             "npartitions",
             "chunksize",
@@ -1147,11 +1147,12 @@ if VDF_MODE == Mode.pyspark:
     def _patch_read_json(path_or_buf, **kwargs):
         if os.path.isdir(path_or_buf):
             path_or_buf = path_or_buf + "/*"
-        return FrontEnd.read_json(path_or_buf, **kwargs)
+        return FrontEndPandas.read_json(path_or_buf, **kwargs)
 
 
-    _original_Series_to_excel = BackEnd.DataFrame.to_excel
-    _original_Dataframe_to_excel = BackEnd.DataFrame.to_excel
+    _original_Series_to_excel = BackEndPandas.DataFrame.to_excel
+    _original_Dataframe_to_excel = BackEndPandas.DataFrame.to_excel
+
 
     # Special case for pyspark
 
@@ -1225,7 +1226,7 @@ if VDF_MODE == Mode.pyspark:
     compute.__doc__ = _doc_compute
 
     # High level functions
-    concat = FrontEnd.concat
+    concat = FrontEndPandas.concat
     delayed = _delayed
     persist = _persist  # type: ignore
 
@@ -1243,7 +1244,7 @@ if VDF_MODE == Mode.pyspark:
     visualize.__doc__ = _doc_visualize
 
     from_pandas: _VDataFrame = _remove_parameters(
-        FrontEnd.from_pandas,
+        FrontEndPandas.from_pandas,
         [
             "npartitions",
             "chunksize",
@@ -1253,16 +1254,16 @@ if VDF_MODE == Mode.pyspark:
     from_backend: _VDataFrame = from_pandas
 
     # pyspark
-    read_csv = _patch_read(FrontEnd, "read_csv")
-    # read_csv = FrontEnd.read_csv
-    read_excel = _patch_read(FrontEnd, "read_excel", "cudf, dask, dask_modin and dask_cudf")
+    read_csv = _patch_read(FrontEndPandas, "read_csv")
+    # read_csv = FrontEndPandas.read_csv
+    read_excel = _patch_read(FrontEndPandas, "read_excel", "cudf, dask, dask_modin and dask_cudf")
     read_feather = _not_implemented
     read_fwf = _not_implemented
     read_hdf = _not_implemented
-    read_json = _patch_read(FrontEnd, "read_json")
-    read_orc = _patch_read(FrontEnd, "read_orc")
-    read_parquet = _patch_read(FrontEnd, "read_parquet")
-    read_sql_table = _warn(FrontEnd.read_sql_table, "cudf and dask_cudf")
+    read_json = _patch_read(FrontEndPandas, "read_json")
+    read_orc = _patch_read(FrontEndPandas, "read_orc")
+    read_parquet = _patch_read(FrontEndPandas, "read_parquet")
+    read_sql_table = _warn(FrontEndPandas.read_sql_table, "cudf and dask_cudf")
 
     _VDataFrame.to_feather = _not_implemented
     _VDataFrame.to_fwf = _not_implemented
@@ -1270,7 +1271,6 @@ if VDF_MODE == Mode.pyspark:
     _VDataFrame.to_backend = _VDataFrame.to_pandas
     _VDataFrame.to_backend.__doc__ = _VDataFrame.to_pandas.__doc__
     _VDataFrame.to_ndarray = _VDataFrame.to_numpy
-
 
     # Add-on and patch of original dataframes and series
     _VDataFrame.apply_rows = _apply_rows
@@ -1308,9 +1308,9 @@ if VDF_MODE == Mode.pyspark:
 
     _patch_pandas(BackEndDataFrame, BackEndSeries, numpy.ndarray)
 
-    BackEnd.Series.to_excel = _series_to_excel
+    BackEndPandas.Series.to_excel = _series_to_excel
 
-    BackEnd.DataFrame.to_excel = _dataframe_to_excel
+    BackEndPandas.DataFrame.to_excel = _dataframe_to_excel
 
 
 # %% Virtual
@@ -1368,8 +1368,8 @@ class VSeries(_VSeries):
 __all__: List[str] = ['VDF_MODE', 'Mode',
                       'VDataFrame', 'VSeries',
                       'delayed', 'compute', 'persist',
-                      'BackEnd', 'BackEndDataFrame', 'BackEndSeries',
-                      'FrontEnd',
+                      'BackEndPandas', 'BackEndDataFrame', 'BackEndSeries',
+                      'FrontEndPandas',
                       'read_csv', 'read_excel', 'read_feather', 'read_fwf',
                       'read_hdf', 'read_json', 'read_orc',
                       'read_parquet',

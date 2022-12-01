@@ -9,13 +9,13 @@ import virtual_dataframe as vdf
 from virtual_dataframe import Mode
 
 
-def test_Series_persist():
+def test_Series_persist(vclient):
     s = vdf.VSeries([1])
     rc = s.persist()
     assert rc.to_pandas().equals(s.to_pandas())
 
 
-def test_Series_repartition():
+def test_Series_repartition(vclient):
     s = vdf.VSeries([1])
     rc = s.repartition(npartitions=1)
     assert rc.to_pandas().equals(s.to_pandas())
@@ -28,7 +28,7 @@ def test_Series_to_from_pandas():
     assert s.to_pandas().equals(pandas.Series([1, 2, 3, None, 4]))
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf), reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.dask_cupy), reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
 def test_Series_to_csv():
@@ -41,7 +41,7 @@ def test_Series_to_csv():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask, Mode.dask_array, Mode.dask_cudf),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy),
                     reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
@@ -86,7 +86,8 @@ def test_Series_to_json():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.pyspark), reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.dask_cupy, Mode.pyspark),
+                    reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
 def test_Series_to_sql():
@@ -121,6 +122,7 @@ def test_Series_map_partitions():
     result = s.map_partitions(lambda s: s * 2).compute().to_pandas()
     assert result.equals(expected)
 
+
 def test_Series_compute():
     expected = pandas.Series([1, 2, 3, None, 4])
     result = vdf.VSeries([1, 2, 3, None, 4])
@@ -130,5 +132,3 @@ def test_Series_compute():
 def test_Series_visualize():
     result = vdf.VSeries([1, 2, 3, None, 4])
     assert result.visualize()
-
-

@@ -34,7 +34,7 @@ def _analyse_cluster_url(mode: Mode, env) -> Tuple[ParseResult, Optional[str], i
     else:
         vdf_cluster = env.get("VDF_CLUSTER", None)
     if not vdf_cluster:
-        if mode in (Mode.dask, Mode.dask_array, Mode.dask_modin, Mode.dask_cudf):
+        if mode in (Mode.dask, Mode.dask_array, Mode.dask_modin, Mode.dask_cudf, Mode.dask_cupy):
             vdf_cluster = f"{Mode.dask.name}://threads"
         # elif mode == Mode.ray_modin:
         #     vdf_cluster = "ray://"
@@ -259,7 +259,7 @@ def _new_VClient(mode: Mode,
 
     if address:
 
-        if mode in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_modin):
+        if mode in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy, Mode.dask_modin):
             import dask.distributed
             return dask.distributed.Client(**kwargs)
         elif mode == Mode.pyspark:
@@ -267,7 +267,7 @@ def _new_VClient(mode: Mode,
     else:
         vdf_cluster, host, port = _analyse_cluster_url(mode, env)
 
-        if mode in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_modin):
+        if mode in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy, Mode.dask_modin):
             import dask
             import dask.distributed
             assert vdf_cluster.scheme == Mode.dask.name
@@ -275,7 +275,7 @@ def _new_VClient(mode: Mode,
                 dask.config.set(scheduler='synchronous')  # type: ignore
                 LOGGER.warning("Use synchronous scheduler for debuging")
             elif host in ('threads', '', None):
-                if mode != Mode.dask_cudf:
+                if mode not in (Mode.dask_cudf, Mode.dask_cupy):
                     dask.config.set(scheduler='threads')  # type: ignore
                     client = _ClientDummy("threads")
                 else:
@@ -292,14 +292,14 @@ def _new_VClient(mode: Mode,
                 if host.endswith(".local"):
                     local_default_params = dask.config.global_config['local'] \
                         if 'local' in dask.config.global_config else {}
-                    if mode == Mode.dask_cudf:
+                    if mode in (Mode.dask_cudf, Mode.dask_cupy):
                         from dask_cuda import LocalCUDACluster
                         client = dask.distributed.Client(address=
                         LocalCUDACluster(
                             **local_default_params
                         ),
                             **kwargs)
-                    elif mode in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_modin):
+                    elif mode in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy, Mode.dask_modin):
                         # Purge params
                         for key in params_cuda_local_cluster:
                             if key in local_default_params:

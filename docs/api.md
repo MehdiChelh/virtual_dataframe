@@ -4,12 +4,12 @@
 |----------------------------------------|-------------------------------------------------------------------------------------|
 | VDF_MODE                               | The current mode                                                                    |
 | Mode                                   | The enumeration of differents mode                                                  |
-| FrontEnd                               | `pandas`, `cudf`, `modin.pandas`, `dask_cudf`, `dask.dataframe` or `pyspark.pandas` |
+| FrontEndPandas                         | `pandas`, `cudf`, `modin.pandas`, `dask_cudf`, `dask.dataframe` or `pyspark.pandas` |
 | FrontEndNumpy                          | `numpy`, `cupy` or `dask.array`                                                     |
 | BackEndDataFrame                       | `pandas` or `cudf`                                                                  |
 | BackEndSeries                          | `pandas.Series`, `cudf.Series` or `modin.pandas.Series`                             |
 | BackEndNDArray                         | `numpy.ndarray` or `cupy.ndarray`                                                   |
-| BackEnd                                | `pandas`, `cudf` or `modin.pandas`                                                  |
+| BackEndNumpy                           | `pandas`, `cudf` or `modin.pandas`                                                  |
 | vdf.@delayed                           | Delayed function (do nothing or dask.delayed)                                       |
 | vdf.concat(...)                        | Merge VDataFrame                                                                    |
 | vdf.read_csv(...)                      | Read VDataFrame from CSVs *glob* files                                              |
@@ -26,14 +26,12 @@
 | VDataFrame(data, npartitions=...)      | Create DataFrame in memory (only for test)                                          |
 | VSeries(data, npartitions=...)         | Create Series in memory (only for test)                                             |
 | VLocalCluster(...)                     | Create a dask Local Cluster (Dask, Cuda or Spark)                                   |
-| BackEndDataFrame                       | The class of dask backend dataframe                                                 |
-| BackEndSeries                          | The class of dask backend series                                                    |
-| BackEnd                                | The backend framework                                                               |
 | VDataFrame.compute()                   | Compute the virtual dataframe                                                       |
 | VDataFrame.persist()                   | Persist the dataframe in memory                                                     |
 | VDataFrame.repartition()               | Rebalance the dataframe                                                             |
 | VDataFrame.visualize()                 | Create an image with the graph                                                      |
 | VDataFrame.to_pandas()                 | Convert to pandas dataframe                                                         |
+| VDataFrame.to_backend()                | Convert to backend dataframe                                                        |
 | VDataFrame.to_csv()                    | Save to *glob* files                                                                |
 | VDataFrame.to_excel()<sup>*</sup>      | Save to *glob* files                                                                |
 | VDataFrame.to_feather()<sup>*</sup>    | Save to *glob* files                                                                |
@@ -43,7 +41,6 @@
 | VDataFrame.to_parquet()                | Save to *glob* files                                                                |
 | VDataFrame.to_sql()<sup>*</sup>        | Save to sql table                                                                   |
 | VDataFrame.to_numpy()                  | Convert to numpy array                                                              |
-| VDataFrame.to_backend()                | Convert to backend dataframe                                                        |
 | VDataFrame.categorize()                | Detect all categories                                                               |
 | VDataFrame.apply_rows()                | Apply rows, GPU template                                                            |
 | VDataFrame.map_partitions()            | Apply function for each parttions                                                   |
@@ -71,8 +68,20 @@
 <sup>*</sup> some frameworks do not implement it
 
 
-You can read a sample notebook [here](https://github.com/pprados/virtual-dataframe/blob/master/notebooks/demo.ipynb)
-for an exemple of all API.
+You can read a sample notebook
+[here for Pandas](https://github.com/pprados/virtual-dataframe/blob/master/notebooks/demo_pandas.ipynb)
+or [here for Numpy](https://github.com/pprados/virtual-dataframe/blob/master/notebooks/demo_numpy.ipynb)
+for an example of the use of API.
+
+Keep in mind, the current framework are in `FrontEndPandas` and `FrontEndNumpy`,
+and the backend API (use *inside* dask) are in `BackEndPandas` and `BackEndNumpy`.
+To maintain this relationship, use:
+
+- `.to_backend()` in place of `.to_pandas()`
+- `.to_ndarray()` in place of `.to_numpy()`
+
+The `.to_backend()` can return a Pandas or a Cudf dataframe.
+The `.to_ndarray()` can return a Numpy, a Cupy or a dask.array array.
 
 Each API propose a specific version for each framework. For example:
 

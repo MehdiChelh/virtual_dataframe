@@ -55,10 +55,10 @@ class SparkLocalCluster:
         self.spark_conf = conf
         self.session = None
 
-    def __str__(self):
-        return f"SparkLocalCluster(\'{self.conf.get('spark.master')}\')"
+    def __str__(self) -> str:
+        return f"SparkLocalCluster(\'{self.spark_conf.get('spark.master')}\')"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     def __enter__(self):
@@ -90,7 +90,7 @@ def _new_VLocalCluster(
             if key in kwargs:
                 del kwargs[key]
         return LocalCluster(**kwargs)
-    elif mode == Mode.dask_cudf:
+    elif mode in (Mode.dask_cudf, Mode.dask_cupy):
         try:
             from dask_cuda import LocalCUDACluster
             return LocalCUDACluster(**kwargs)

@@ -10,20 +10,6 @@ from virtual_dataframe import Mode, VDF_MODE
 from virtual_dataframe import VClient
 
 
-@pytest.fixture(scope="session")
-def vclient():
-    local_cluster = vdf.VLocalCluster(
-        scheduler_port=0,
-        device_memory_limit="5g",
-    )
-    client = vdf.VClient(
-        address=local_cluster,
-    )
-    client.__enter__()
-    yield client
-    client.__exit__(None, None, None)
-
-
 def test_dataframe_repartition(vclient):
     df = vdf.VDataFrame([1])
     rc = df.repartition(npartitions=1)
@@ -67,7 +53,8 @@ def test_DataFrame_to_read_csv():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask, Mode.dask_array, Mode.dask_cudf), reason="Incompatible mode")
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy),
+                    reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
 @pytest.mark.filterwarnings("ignore:.*This may take some time.")
@@ -86,7 +73,7 @@ def test_DataFrame_to_read_excel():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.pyspark),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy, Mode.pyspark),
                     reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
@@ -105,7 +92,7 @@ def test_DataFrame_to_read_feather():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.pyspark),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.dask_cupy, Mode.pyspark),
                     reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
@@ -116,7 +103,7 @@ def test_DataFrame_read_fwf():
     assert df.to_pandas().reset_index(drop=True).equals(df2.to_pandas().reset_index(drop=True))
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask_cudf, Mode.pyspark),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask_cudf, Mode.dask_cupy, Mode.pyspark),
                     reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
@@ -153,7 +140,7 @@ def test_DataFrame_to_read_json():
 
 
 @pytest.mark.skipif(vdf.VDF_MODE in (Mode.pandas, Mode.numpy,
-                                     Mode.dask_cudf,
+                                     Mode.dask_cudf,Mode.dask_cupy,
                                      Mode.modin,
                                      Mode.dask_modin), reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
@@ -186,7 +173,7 @@ def test_DataFrame_to_read_parquet():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.pyspark),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.cudf, Mode.cupy, Mode.dask_cudf, Mode.dask_cupy, Mode.pyspark),
                     reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
 @pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
@@ -242,4 +229,3 @@ def test_DataFrame_map_partitions():
     # _VDataFrame.map_partitions = lambda self, func, *args, **kwargs: func(self, **args, **kwargs)
     result = df.map_partitions(lambda df, v: df.assign(c=df.a * df.b * v), v=10)
     assert result.to_pandas().equals(expected)
-

@@ -10,18 +10,6 @@ import virtual_dataframe as vdf
 import virtual_dataframe.numpy as vnp
 from virtual_dataframe import Mode, VDF_MODE
 
-@pytest.fixture(scope="session")
-def vclient():
-    local_cluster = vdf.VLocalCluster(
-        scheduler_port=0,
-        device_memory_limit="5g",
-    )
-    client = vdf.VClient(
-        address=local_cluster,
-    )
-    client.__enter__()
-    yield client
-    client.__exit__(None, None, None)
 
 def test_array():
     assert numpy.array_equal(
@@ -47,7 +35,7 @@ def test_DataFrame_to_ndarray():
         npartitions=2
     )
     a = df.to_ndarray()
-    assert VDF_MODE not in (Mode.dask_cudf,) or isinstance(a, cupy.ndarray)
+    assert VDF_MODE not in (Mode.dask_cudf, Mode.dask_cupy) or isinstance(a, cupy.ndarray)
     assert numpy.array_equal(
         vnp.asnumpy(a),
         np.array([
@@ -63,7 +51,7 @@ def test_Series_to_ndarray():
         npartitions=2
     )
     a = serie.to_ndarray()
-    assert VDF_MODE not in (Mode.dask_cudf,) or isinstance(a, cupy.ndarray)
+    assert VDF_MODE not in (Mode.dask_cudf, Mode.dask_cupy) or isinstance(a, cupy.ndarray)
     assert numpy.array_equal(
         vnp.asnumpy(a),
         np.array(
@@ -80,7 +68,7 @@ def test_asarray():
         npartitions=2
     )
     a = vnp.asarray(df['a'])
-    assert VDF_MODE not in (Mode.dask_cudf,) or isinstance(a, cupy.ndarray)
+    assert VDF_MODE not in (Mode.dask_cudf, Mode.dask_cupy) or isinstance(a, cupy.ndarray)
     numpy.array_equal(
         vnp.asnumpy(a),
         np.array(
@@ -118,6 +106,7 @@ def test_ctr():
 
 def test_empty():
     vnp.empty((3, 4)).compute()
+
 
 def test_slicing():
     assert vnp.array([1, 2])[1:].compute(), "can not call compute()"
@@ -171,7 +160,7 @@ def test_save_and_load_npy():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy),
                     reason="Incompatible mode")
 def test_savez_and_load_npz():
     d = tempfile.mkdtemp()
@@ -186,7 +175,7 @@ def test_savez_and_load_npz():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy),
                     reason="Incompatible mode")
 def test_savez_compressed_and_load_npz():
     d = tempfile.mkdtemp()
@@ -201,7 +190,7 @@ def test_savez_compressed_and_load_npz():
         shutil.rmtree(d)
 
 
-@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf),
+@pytest.mark.skipif(vdf.VDF_MODE in (Mode.dask, Mode.dask_array, Mode.dask_cudf, Mode.dask_cupy),
                     reason="Incompatible mode")
 def test_savetxt_and_loadtxt():
     d = tempfile.mkdtemp()

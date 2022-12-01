@@ -23,8 +23,8 @@
 - Add `vdf.BackEndDataFrame = pandas.DataFrame`
 - Add `vdf.BackEndSeries = pandas.Series`
 - Add `vdf.BackEndArray = numpy.ndarray`
-- Add `vdf.BackEnd = pandas`
-- Add `vdf.FrontEnd = pandas`
+- Add `vdf.BackEndPandas = pandas`
+- Add `vdf.FrontEndPandas = pandas`
 - Add `vdf.FrontEndNumpy = numpy`
 
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
@@ -71,8 +71,8 @@
 - Add `vdf.BackEndDataFrame = cudf.DataFrame`
 - Add `vdf.BackEndSeries = cudf.Series`
 - Add `vdf.BackEndArray = cupy.ndarray`
-- Add `vdf.BackEnd = cudf`
-- Add `vdf.FrontEnd = cudf`
+- Add `vdf.BackEndPandas = cudf`
+- Add `vdf.FrontEndPandas = cudf`
 - Add `vdf.FrontEndNumpy = cupy`
 
 - Add `vdf.compute()` to return an tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
@@ -120,8 +120,8 @@
 - Add `vdf.BackEndDataFrame = modin.pandas.DataFrame`
 - Add `vdf.BackEndSeries = modin.pandas.Series`
 - Add `vdf.BackEndArray = numpy.ndarray`
-- Add `vdf.BackEnd = modin.pandas`
-- Add `vdf.FrontEnd = modin.pandas`
+- Add `vdf.BackEndPandas = modin.pandas`
+- Add `vdf.FrontEndPandas = modin.pandas`
 - Add `vdf.FrontEndNumpy = numpy`
 
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
@@ -176,8 +176,8 @@
 - Add `vdf.BackEndDataFrame = pandas.DataFrame`
 - Add `vdf.BackEndSeries = pandas.Series`
 - Add `vdf.BackEndArray = numpy.ndarray`
-- Add `vdf.BackEnd = pandas`
-- Add `vdf.FrontEnd = dask.dataframe`
+- Add `vdf.BackEndPandas = pandas`
+- Add `vdf.FrontEndPandas = dask.dataframe`
 - Add `vdf.FrontEndNumpy = dask.array`
 
 - Add `vdf.concat()` an alias of `dask.dataframe.multi.concat()`
@@ -209,8 +209,8 @@
 - Add `vdf.BackEndDataFrame = cudf.DataFrame`
 - Add `vdf.BackEndSeries = cudf.Series`
 - Add `vdf.BackEndArray = cudf`
-- Add `vdf.BackEnd = pandas`
-- Add `vdf.FrontEnd = dask_cudf`
+- Add `vdf.BackEndPandas = pandas`
+- Add `vdf.FrontEndPandas = dask_cudf`
 - Add `vdf.FrontEndNumpy = cupy`
 
 - Add `vdf.compute()` to `dask.compute()`
@@ -252,8 +252,8 @@
 - Add `vdf.BackEndDataFrame = pandas.DataFrame`
 - Add `vdf.BackEndSeries = pandas.Series`
 - Add `vdf.BackEndArray = numpy.ndarray`
-- Add `vdf.BackEnd = pandas`
-- Add `vdf.FrontEnd = pyspark.pandas`
+- Add `vdf.BackEndPandas = pandas`
+- Add `vdf.FrontEndPandas = pyspark.pandas`
 - Add `vdf.FrontEndNumpy = numpy`
 
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
@@ -312,15 +312,14 @@ a sub-class of `ndarray` and the differents protocoles describe
 - Add `Vndarray.compute_chunk_sizes()` to return `self`
 - Add `Vndarray.rechunk()` to return `self`
 - A `nparray.view(Vndarray)` is called when necessary
-- Add `vdf.numpy.array()` invoke `numpy.array()` and return a view with `Vndarray`
 - Add `vdf.numpy.arange()`, remove the parameter `chunks`, invoke `numpy.arange()` and return a view with `Vndarray`
-- Add `vdf.numpy.asnumpy()` to return df
+- Add `vdf.numpy.asnumpy()` to return parameter
 - Add `vdf.numpy.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
 - Add `vdf.numpy.random.*` with a wrapper to add a view of `Vndarray` for each *random* method
-- Add `vdf.numpy.from_array()` to return `numpy.array()`
-- Add `vdf.numpy.load()` to return `numpy.load()`
-- Add `vdf.numpy.save()` to return `numpy.save()`
-- Add `vdf.numpy.savez()` to return `numpy.savez()`
+- Add `vdf.numpy.from_array()` to remove the parameter `chunks`
+- Add `vdf.numpy.load()` to remove the parameter `chunks`
+- Add `vdf.numpy.save()` to remove the parameter `chunks`
+- Add `vdf.numpy.savez()` to remove the parameter `chunks`
 
 ## cupy
 
@@ -335,7 +334,7 @@ a sub-class of `ndarray` and the differents protocoles describe
 
 ## dask_array
 
-- Add `dask.array.asnumpy()` to return `cupy.asnumpy(df.compute())`
+- Add `dask.array.asnumpy()` to return `numpy.asnumpy(df.compute())`
 - Add `dask.array.asarray()` to return `a.compute().to_cupy()`
 - Add `vdf.numpy.load()` to return `dask.array.from_npy_stack()`
 - Add `vdf.numpy.save()` to return `dask.array.to_npy_stack()`

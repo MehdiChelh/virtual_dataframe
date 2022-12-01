@@ -3,20 +3,6 @@ import pytest
 
 import virtual_dataframe as vdf
 
-@pytest.fixture(scope="session")
-def vclient():
-    local_cluster = vdf.VLocalCluster(
-        scheduler_port=0,
-        device_memory_limit="5g",
-    )
-    client = vdf.VClient(
-        address=local_cluster,
-    )
-    client.__enter__()
-    yield client
-    client.__exit__(None, None, None)
-
-
 
 def test_apply_rows(vclient):
     import numpy
@@ -59,7 +45,7 @@ def test_delayed():
     assert vdf.compute(vdf.delayed(f)(42)) == (42,)
 
 
-def test_compute():
+def test_compute(vclient):
     @vdf.delayed
     def f(i):
         return i
@@ -67,7 +53,7 @@ def test_compute():
     assert vdf.compute(f(42), f(50)) == (42, 50)
 
 
-def test_persist():
+def test_persist(vclient):
     @vdf.delayed
     def f(i):
         return i
@@ -75,7 +61,7 @@ def test_persist():
     assert vdf.persist(f(42))[0] == 42
 
 
-def test_visualize():
+def test_visualize(vclient):
     @vdf.delayed
     def f(i):
         return i
@@ -83,14 +69,14 @@ def test_visualize():
     assert vdf.visualize(f(42), f(50))
 
 
-def test_concat():
+def test_concat(vclient):
     rc = list(vdf.concat([
         vdf.VDataFrame([1]),
         vdf.VDataFrame([2])]).to_pandas()[0])
     assert rc == [1, 2]
 
 
-def test_persist():
+def test_persist(vclient):
     df1 = vdf.VDataFrame([1])
     df2 = vdf.VDataFrame([2])
 
@@ -98,16 +84,15 @@ def test_persist():
     assert rc1.to_pandas().equals(df1.to_pandas())
     assert rc2.to_pandas().equals(df2.to_pandas())
 
-def test_from_backend():
+
+def test_from_backend(vclient):
     odf = vdf.VDataFrame({"a": [1, 2]}, npartitions=2)
     assert vdf.from_backend(odf.to_backend(), npartitions=2).to_pandas().equals(
         vdf.VDataFrame({"a": [1, 2]}).to_pandas())
 
 
 @pytest.mark.filterwarnings("ignore:.*This may take some time.")
-def test_from_pandas():
+def test_from_pandas(vclient):
     pdf = pandas.DataFrame({"a": [1, 2]})
     df = vdf.from_pandas(pdf, npartitions=2)
     assert df.to_pandas().equals(pdf)
-
-
