@@ -96,3 +96,5 @@ May be, you can use *Modin* all the time, except for the end of the year periods
 
 With conda environment, you can use [variables](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#setting-environment-variables)
 to set the variables when you *activate* an environment.
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pprados/virtual-dataframe?labpath=%2Fmain%2Fnotebooks)

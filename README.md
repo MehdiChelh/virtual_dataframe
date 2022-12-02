@@ -48,3 +48,4 @@ This project is essentially a back-port of *Dask+Cudf* to others frameworks.
 We try to normalize the API of all frameworks.
 This project will *weave* your code with the selected framework, at runtime.
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pprados/virtual-dataframe?labpath=%2Fmain%2Fnotebooks)

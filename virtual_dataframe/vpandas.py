@@ -282,7 +282,7 @@ def _patch_pandas(pd_DataFrame, pd_Series, pd_NDArray):
     pd_DataFrame.to_fwf = _not_implemented
     pd_DataFrame.to_hdf = _patch_to(pd_DataFrame.to_hdf, _extra_params)
     pd_DataFrame.to_json = _patch_to(pd_DataFrame.to_json, _extra_params)
-    pd_DataFrame.to_orc = _not_implemented
+    pd_DataFrame.to_orc = _patch_to(pd_DataFrame.to_orc, _extra_params)
     pd_DataFrame.to_parquet = _patch_to(pd_DataFrame.to_parquet, _extra_params)
 
     pd_DataFrame.to_pandas = lambda self: self
@@ -541,8 +541,8 @@ if VDF_MODE in (Mode.pandas, Mode.numpy):
     read_fwf = _patch_read(FrontEndPandas, "read_fwf", "cudf and dask_cudf")
     read_hdf = _patch_read(FrontEndPandas, "read_hdf", "dask_cudf")
     read_json = _patch_read(FrontEndPandas, "read_json")
-    read_orc = FrontEndPandas.read_orc
-    read_parquet = FrontEndPandas.read_parquet
+    read_orc = _patch_read(FrontEndPandas, "read_orc")
+    read_parquet = _patch_read(FrontEndPandas, "read_parquet")
     read_sql_table = _warn(FrontEndPandas.read_sql_table, "cudf and dask_cudf")
 
     _patch_pandas(_VDataFrame, _VSeries, BackEndNumpy)

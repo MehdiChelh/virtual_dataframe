@@ -148,7 +148,7 @@ def test_DataFrame_to_read_json():
 def test_DataFrame_to_read_orc():
     d = tempfile.mkdtemp()
     try:
-        filename = f"{d}/test.orc"
+        filename = f"{d}/test*.orc"
         df = vdf.VDataFrame({'a': list(range(0, 3)), 'b': list(range(0, 30, 10))}, npartitions=2)
         df.to_orc(filename)  # Bug with dask
         df2 = vdf.read_orc(filename)
@@ -163,10 +163,25 @@ def test_DataFrame_to_read_orc():
 def test_DataFrame_to_read_parquet():
     d = tempfile.mkdtemp()
     try:
-        filename = f"{d}/test.parquet"
+        filename = f"{d}/test*.parquet"
         df = vdf.VDataFrame({'a': list(range(0, 3)), 'b': list(range(0, 30, 10))}, npartitions=2)
         df.to_parquet(filename)
         df2 = vdf.read_parquet(filename)
+        assert (df.sort_values("a").reset_index(drop=True).to_backend()
+                == df2.sort_values("a").reset_index(drop=True).to_backend()).all()[0]
+    finally:
+        shutil.rmtree(d)
+
+
+@pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
+@pytest.mark.filterwarnings("ignore:.*defaulting to pandas")
+def test_DataFrame_to_read_orc():
+    d = tempfile.mkdtemp()
+    try:
+        filename = f"{d}/test*.orc"
+        df = vdf.VDataFrame({'a': list(range(0, 3)), 'b': list(range(0, 30, 10))}, npartitions=2)
+        df.to_orc(filename)
+        df2 = vdf.read_orc(filename)
         assert (df.sort_values("a").reset_index(drop=True).to_backend()
                 == df2.sort_values("a").reset_index(drop=True).to_backend()).all()[0]
     finally:
