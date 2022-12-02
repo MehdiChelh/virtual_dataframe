@@ -1079,7 +1079,14 @@ unit-test: .make-unit-test
 		--log-level ERROR \
 		--no-report-mode \
 		-p mode $* \
-		notebooks/demo.ipynb \
+		notebooks/demo_pandas.ipynb \
+		/dev/null 2>&1 | grep -v -e "the file is not specified with any extension" -e " *warnings.warn("
+	python $(PYTHON_ARGS) -m papermill \
+		-k $(KERNEL) \
+		--log-level ERROR \
+		--no-report-mode \
+		-p mode $* \
+		notebooks/demo_numpy.ipynb \
 		/dev/null 2>&1 | grep -v -e "the file is not specified with any extension" -e " *warnings.warn("
 	date >.make-notebooks-test-$*
 

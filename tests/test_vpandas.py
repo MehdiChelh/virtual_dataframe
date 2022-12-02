@@ -140,7 +140,7 @@ def test_DataFrame_to_read_json():
 
 
 @pytest.mark.skipif(vdf.VDF_MODE in (Mode.pandas, Mode.numpy,
-                                     Mode.dask_cudf,Mode.dask_cupy,
+                                     Mode.dask_cudf, Mode.dask_cupy,
                                      Mode.modin,
                                      Mode.dask_modin), reason="Incompatible mode")
 @pytest.mark.filterwarnings("ignore:Function ")
@@ -181,7 +181,7 @@ def test_DataFrame_to_read_orc():
         filename = f"{d}/test.orc"
         df = vdf.VDataFrame({'a': list(range(0, 3)), 'b': list(range(0, 30, 10))}, npartitions=2)
         df.to_orc(filename)
-        df2 = vdf.read_orc(filename)
+        df2 = vdf.read_orc(filename, columns=("a", "b"))
         assert (df.sort_values("a").reset_index(drop=True).to_backend()
                 == df2.sort_values("a").reset_index(drop=True).to_backend()).all()[0]
     finally:
@@ -244,6 +244,7 @@ def test_DataFrame_map_partitions():
     # _VDataFrame.map_partitions = lambda self, func, *args, **kwargs: func(self, **args, **kwargs)
     result = df.map_partitions(lambda df, v: df.assign(c=df.a * df.b * v), v=10)
     assert result.to_pandas().equals(expected)
+
 
 def test_DataFrame_persist():
     df = vdf.VDataFrame(

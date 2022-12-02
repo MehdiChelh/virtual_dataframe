@@ -770,9 +770,6 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     read_parquet = FrontEndPandas.read_parquet
     read_sql_table = _warn(FrontEndPandas.read_sql_table, "cudf and dask_cudf")
 
-    # Add-on and patch of original dataframes and series
-    _VDataFrame.to_orc = _not_implemented
-
     _VDataFrame.to_excel = _patch_to(_VDataFrame.to_excel, [], "cudf, dask and dask_cudf")
     _VDataFrame.to_feather = _patch_to(_VDataFrame.to_feather, [], "dask and dask_cudf")
     _VDataFrame.to_hdf = _patch_to(_VDataFrame.to_hdf, [], "dask_cudf")
@@ -793,6 +790,8 @@ if VDF_MODE in (Mode.modin, Mode.dask_modin):
     _VDataFrame.compute.__doc__ = _doc_VDataFrame_compute
     _VDataFrame.map_partitions = lambda df, func, *args, **kwargs: func(df, *args, **kwargs)
     _VDataFrame.map_partitions.__doc__ = _doc_VDataFrame_map_partitions
+    _VDataFrame.persist = lambda self, **kwargs: self
+    _VDataFrame.persist.__doc__ = _doc_VDataFrame_persist
     _VDataFrame.repartition = lambda self, **kwargs: self
     _VDataFrame.repartition.__doc__ = _doc_VDataFrame_persist
     _VDataFrame.visualize = lambda self: visualize(self)
@@ -881,7 +880,20 @@ if VDF_MODE in (Mode.dask_cudf, Mode.dask_cupy):
     read_fwf = _not_implemented
     read_hdf = _not_implemented
     read_json = _patch_read_json
-    read_orc = FrontEndPandas.read_orc
+
+
+    def _read_orc(*args, **kwargs):
+        from pathlib import Path
+        path = args[0]
+        p = Path(path)
+        if p.is_dir():
+            args = (path + "/*",) + args[1:]
+            return FrontEndPandas.read_orc(*args, **kwargs)
+        else:
+            return FrontEndPandas.read_orc(*args, **kwargs)
+
+
+    read_orc = _read_orc
     read_parquet = FrontEndPandas.read_parquet
     read_sql_table = _not_implemented
 
@@ -900,6 +912,8 @@ if VDF_MODE in (Mode.dask_cudf, Mode.dask_cupy):
     _VDataFrame.to_numpy.__doc__ = _doc_VDataFrame_to_numpy
     _VDataFrame.to_ndarray = _df_to_ndarray
     _VDataFrame.to_ndarray.__doc__ = _doc_VDataFrame_to_numpy
+    _VDataFrame.persist.__doc__ = _doc_VDataFrame_persist
+    _VDataFrame.repartition = lambda self, **kwargs: self
 
     _VSeries.to_pandas = lambda self: self.compute().to_pandas()
     _VSeries.to_pandas.__doc__ = _doc_VDataFrame_to_pandas
@@ -909,6 +923,8 @@ if VDF_MODE in (Mode.dask_cudf, Mode.dask_cupy):
     _VSeries.to_numpy.__doc__ = _doc_VSeries_to_numpy
     _VSeries.to_ndarray = _df_to_ndarray
     _VSeries.to_ndarray.__doc__ = _doc_VSeries_to_numpy
+    _VSeries.persist.__doc__ = _doc_VDataFrame_persist
+    _VDataFrame.repartition = lambda self, **kwargs: self
 
     _patch_cudf(BackEndDataFrame, BackEndSeries, cupy.ndarray)
 
@@ -1285,8 +1301,7 @@ if VDF_MODE == Mode.pyspark:
     _VDataFrame.compute.__doc__ = _doc_VDataFrame_compute
     _VDataFrame.map_partitions = lambda self, func, *args, **kwargs: func(self, *args, **kwargs)
     _VDataFrame.map_partitions.__doc__ = _doc_VDataFrame_map_partitions
-    # FIXME _VDataFrame.persist = lambda self, **kwargs: self
-    _VDataFrame.persist.__doc__ = _doc_VDataFrame_persist
+    _VDataFrame.persist = lambda self, *args, **kwargs: self.spark.persist(*args, **kwargs)
     _VDataFrame.repartition = lambda self, **kwargs: self
     _VDataFrame.repartition.__doc__ = _doc_VDataFrame_repartition
     _VDataFrame.visualize = lambda self: visualize(self)
@@ -1303,8 +1318,7 @@ if VDF_MODE == Mode.pyspark:
     _VSeries.compute.__doc__ = _doc_VDataFrame_compute
     _VSeries.map_partitions = lambda self, func, *args, **kwargs: func(self, *args, **kwargs)
     _VSeries.map_partitions.__doc__ = _doc_VDataFrame_map_partitions
-    # FIXME _VSeries.persist = lambda self, **kwargs: self
-    # FIXME _VSeries.persist.__doc__ = _doc_VSeries_persist
+    _VSeries.persist = lambda self, *args, **kwargs: self
     _VSeries.repartition = lambda self, **kwargs: self
     _VSeries.repartition.__doc__ = _doc_VSeries_repartition
     _VSeries.visualize = lambda self: visualize(self)
