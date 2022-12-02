@@ -163,7 +163,7 @@ def test_DataFrame_to_read_orc():
 def test_DataFrame_to_read_parquet():
     d = tempfile.mkdtemp()
     try:
-        filename = f"{d}/test*.parquet"
+        filename = f"{d}/test.parquet"
         df = vdf.VDataFrame({'a': list(range(0, 3)), 'b': list(range(0, 30, 10))}, npartitions=2)
         df.to_parquet(filename)
         df2 = vdf.read_parquet(filename)
@@ -178,7 +178,7 @@ def test_DataFrame_to_read_parquet():
 def test_DataFrame_to_read_orc():
     d = tempfile.mkdtemp()
     try:
-        filename = f"{d}/test*.orc"
+        filename = f"{d}/test.orc"
         df = vdf.VDataFrame({'a': list(range(0, 3)), 'b': list(range(0, 30, 10))}, npartitions=2)
         df.to_orc(filename)
         df2 = vdf.read_orc(filename)
@@ -244,3 +244,20 @@ def test_DataFrame_map_partitions():
     # _VDataFrame.map_partitions = lambda self, func, *args, **kwargs: func(self, **args, **kwargs)
     result = df.map_partitions(lambda df, v: df.assign(c=df.a * df.b * v), v=10)
     assert result.to_pandas().equals(expected)
+
+def test_DataFrame_persist():
+    df = vdf.VDataFrame(
+        {
+            'a': [0.0, 1.0, 2.0, 3.0],
+            'b': [1, 2, 3, 4],
+        },
+        npartitions=2
+    )
+    df.persist()
+    expected = pandas.DataFrame(
+        {
+            'a': [0.0, 1.0, 2.0, 3.0],
+            'b': [1, 2, 3, 4],
+        }
+    )
+    assert df.to_pandas().equals(expected)

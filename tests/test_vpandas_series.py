@@ -132,3 +132,9 @@ def test_Series_compute():
 def test_Series_visualize():
     result = vdf.VSeries([1, 2, 3, None, 4])
     assert result.visualize()
+
+def test_Series_persist():
+    expected = pandas.Series([1, 2, 3, None, 4])
+    result = vdf.VSeries([1, 2, 3, None, 4])
+    result.persist()
+    assert result.compute().to_pandas().equals(expected)

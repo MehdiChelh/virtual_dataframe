@@ -8,7 +8,7 @@
       <env name="spark.plugins" value="com.nvidia.spark.SQLPlugin" />
       <env name="spark.rapids.sql.concurrentGpuTasks" value="1" />
       <env name="spark.rapids.sql.enabled" value="false" />
-      <env name="VDF_MODE" value="dask_array" />
+      <env name="VDF_MODE" value="dask" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />

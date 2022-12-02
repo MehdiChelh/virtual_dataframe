@@ -43,10 +43,10 @@
 - Update the pandas API to accept glob filename in:
   - `vdf.read_csv()`, `vdf.read_excel()`, `vdf.read_feather()`, `vdf.read_fwf()`, `vdf.read_hdf`, `vdf.read_json()`,
 `vdf.read_orc()`, `vdf.read_parquet()`, `vdf.read_sql_table()`
-  - `DF.to_csv()`, `DF.to_excel()`, `DF.to_feather()`, `DF.to_hdf()`, `DF.to_json()`, `DF.to_parquet()`,
+  - `DF.to_csv()`, `DF.to_excel()`, `DF.to_feather()`, `DF.to_hdf()`, `DF.to_json()`,
   - `Series.to_csv()`, `Series.to_excel()`, `Series.to_hdf()`, `Series.to_json()`
 - Add methods with `_not_implemented`
-  - `DF.to_fwf()`, `DF.to_orc()`
+  - `DF.to_fwf()`
 - Add `DF.to_pandas()` to return `self`
 - Add `DF.to_backend()` to return `self`
 - Add `DF.to_ndarray()` an alias to `to_numpy()`
@@ -90,7 +90,7 @@
   - `*.to_csv()`, `*.to_excel()`, `*.to_feather()`, `*.to_hdf()`, `*.to_json()`
 - Update the pandas API to accept glob filename in:
   - `vdf.read_csv()`, `vdf.read_feather()`, `vdf.read_json()`
-  - `DF.to_csv()`, `DF.to_excel()`, `DF.to_feather()`, `DF.to_hdf()`, `DF.to_json()`, `DF.to_parquet()`,
+  - `DF.to_csv()`, `DF.to_excel()`, `DF.to_feather()`, `DF.to_hdf()`, `DF.to_json()`,
   - `Series.to_hdf()`, `Series.to_json()`
 - Add methods with `_not_implemented`
   - `vdf.read_excel()`, `vdf.read_fwf()`, `vdf.read_sql_table()`
@@ -259,7 +259,7 @@
 - Add `vdf.compute()` to return a tuple of args and be compatible with [`dask.compute()`](https://docs.dask.org/en/stable/api.html#dask.compute)
 - Add `vdf.concat()` an alias of `pyspark.pandas.concat()`
 - Add `vdf.delayed()` to delay a call and be compatible with [`dask.delayed()`](https://docs.dask.org/en/stable/delayed.html)
-- Add `vdf.persist()` to persist the graph and be compatible with [`dask.persist()`](https://docs.dask.org/en/stable/persist.html)
+- Add `vdf.persist()` to persist the current DF
 - Add `vdf.visualize()` to return an empty image and be compatible with [`dask.visualize()`](https://docs.dask.org/en/stable/api.html#dask.visualize)
 
 - Add `vdf.from_backend()` an alias of `from_pandas()`
@@ -273,7 +273,7 @@
   - `read_excel()`, `reql_sql_table()`
 - Update the pandas API to accept glob filename in:
   - `vdf.read_csv()`, `vdf.read_excel()`, `vdf.read_json()`, `vdf.read_orc()`
-  - `DF.to_csv()`, `DF.to_excel()`, `DF.to_feather()`, `DF.to_hdf()`, `DF.to_json()`, `DF.to_parquet()`,
+  - `DF.to_csv()`, `DF.to_excel()`, `DF.to_feather()`, `DF.to_hdf()`, `DF.to_json()`,
   - `Series.to_csv()`, `Series.to_excel()`, `Series.to_hdf()`, `Series.to_json()`
 - Add methods with `_not_implemented`
   - `vdf.read_feather()`, `vdf.read_fwf()`, `vdf.read_hdf()`
