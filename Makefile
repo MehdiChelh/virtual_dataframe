@@ -470,14 +470,19 @@ $(JUPYTER_LABEXTENSIONS_DIR)/%:
 # ---------------------------------------------------------------------------------------
 # SNIPPET pour préparer l'environnement d'un projet juste après un `git clone`
 .PHONY: configure
-$(CONDA_HOME)/bin/mamba:
+$(CONDA_HOME)/bin/$(CONDA):
 	@echo -e "$(green)Install mamba$(normal)"
 	conda install mamba -n base -c conda-forge -y
 
 ## Prepare the work environment (conda venv, kernel, ...)
-configure: $(CONDA_HOME)/bin/mamba
-	@if [[ "$(CONDA_DEFAULT_ENV)" != "base" ]] ; \
+configure: $(CONDA_HOME)/bin/$(CONDA)
+	@if [[ "$(CONDA_DEFAULT_ENV)" != "base" && "$(CONDA_DEFAULT_ENV)" != "" ]] ; \
       then echo -e "$(green)Use: $(cyan)conda deactivate $(VENV)$(green) before using 'make'$(normal)"; exit 1 ; fi
+	echo $(CONDA) create \
+		--name "$(VENV)" \
+		-y $(CONDA_ARGS) \
+		python==$(PYTHON_VERSION)
+
 	$(CONDA) create \
 		--name "$(VENV)" \
 		-y $(CONDA_ARGS) \

@@ -19,8 +19,14 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: make PYTHON_VERSION=${{ matrix.python-version }} configure
-        run: make PYTHON_VERSION=${{ matrix.python-version }} configure
+      - name: env
+        run: set
+      - name: ls
+        run: ls $CONDA_HOME/bin/
+      - name: update conda
+        run: conda update -n base -c defaults conda
+      - name: make CONDA=conda PYTHON_VERSION=${{ matrix.python-version }} configure
+        run: make CONDA=conda PYTHON_VERSION=${{ matrix.python-version }} configure
       - name: make test
         run: |
           source $CONDA/bin/activate virtual_dataframe
